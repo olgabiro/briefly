@@ -3,7 +3,7 @@
 # once you add the font via pdf.add_font().
 
 from io import BytesIO
-from typing import Callable, Optional
+from typing import Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -21,12 +21,8 @@ class NotionPDF(FPDF):
         "Default": (227, 226, 224),  # neutral gray
     }
 
-    add_multiple_pie_charts: Callable
-    add_pie_chart: Callable
-    build_pie_chart_bytes: Callable
-
     # Utility: draw a subtle Notion divider
-    def divider(self, y_offset: float=4) -> None:
+    def divider(self, y_offset: float = 4) -> None:
         self.ln(y_offset)
         self.set_draw_color(230, 230, 230)
         x1, x2 = 10, self.w - 10
@@ -209,6 +205,202 @@ class NotionPDF(FPDF):
 
             self.ln(4)
 
+    def add_multiple_pie_charts(self: NotionPDF,
+                                charts: list[tuple[str, list[tuple[str, int]]]],
+                                per_row: int = 2,
+                                chart_width: float = 50,
+                                h_spacing: float = 45,
+                                v_spacing: float = 16,
+                                size_inch: float = 3
+                                ) -> None:
+        """Add several pie charts.
+
+        charts: list of (title, data_pairs)
+        per_row: how many charts per row
+        chart_width: width per chart in mm
+        h_spacing, v_spacing: spacing in mm
+        """
+
+        x_start = self.get_x()
+        y = self.get_y()
+
+        for idx, (title, pairs) in enumerate(charts):
+            col = idx % per_row
+            if col == 0 and idx != 0:
+                # new row
+                y = y + chart_width + v_spacing
+                x = x_start
+                # check for page overflow
+                if y + chart_width + v_spacing > self.h - self.b_margin:
+                    self.add_page()
+                    y = self.get_y()
+            else:
+                x = x_start + col * (chart_width + h_spacing)
+
+            self.set_xy(x, y)
+            caption = title
+            self.add_pie_chart(
+                title, pairs, chart_width, size_inch, caption
+            )
+
+        # move cursor below the charts
+        final_row_count = (len(charts) + per_row - 1) // per_row
+        self.set_y(y + final_row_count * (chart_width + v_spacing))
+        self.set_x(self.l_margin)
+
+    def add_pie_chart(self: NotionPDF,
+                      title: str,
+                      data_pairs: list[tuple[str, int]],
+                      max_width_mm: float = 70,
+                      size_inch: float = 2.4,
+                      caption: Optional[str] = None,
+                      legend: bool = True) -> None:
+        """Generate a pie chart in-memory and insert it into the PDF.
+
+        - max_width_mm: how wide the chart should be on the page (mm)
+        - size_inch: matplotlib figure size in inches (controls resolution)
+        - caption: optional text shown below the chart
+        """
+        img_buf = self.build_pie_chart_bytes(title, data_pairs, size_inch=size_inch)
+
+        # X/Y position calculations
+        x = self.get_x()
+        y = self.get_y()
+
+        try:
+            # fpdf2 supports file-like objects for image; try to use BytesIO directly
+            self.image(img_buf, x=x, y=y, w=max_width_mm)
+        except Exception:
+            # Fallback: write to a temporary file and use that (rare environments)
+            import tempfile
+
+            tmp = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
+            tmp.write(img_buf.getbuffer())
+            tmp.flush()
+            tmp.close()
+            self.image(tmp.name, x=x, y=y, w=max_width_mm)
+
+        # move cursor to the right of the image
+        self.set_y(y)
+        self.set_x(x + max_width_mm + 0)  # caller can add spacing
+
+        # Legend on the right side
+        legend_x = x + max_width_mm + 4
+        legend_y = y + 8
+
+        if legend:
+            self.set_font(FONT_FAMILY, "", 9)
+            legend_colors = NOTION_CHART_COLORS
+            for idx, (label, val) in enumerate(data_pairs):
+                r, g, b = [int(c * 255) for c in legend_colors[idx]]
+
+                self.set_xy(legend_x, legend_y)
+                self.set_fill_color(r, g, b)
+                self.ellipse(self.get_x(), self.get_y() + 1, 3, 3, style="F")
+
+                self.set_x(self.get_x() + 5)
+                self.set_text_color(60, 60, 60)
+                self.cell(40, 4, f"{label} ({val})", new_x="LMARGIN", new_y="NEXT")
+                legend_y += 5
+
+        # Caption under chart (optional)
+        if caption:
+            self.set_xy(x, y + max_width_mm - 2)
+            self.set_font(FONT_FAMILY, "", 9)
+            self.set_text_color(90, 90, 90)
+            self.cell(max_width_mm, 5, caption, align="C")
+
+        # Move cursor below
+        # self.set_y(y + max_width_mm + 8)
+        # self.set_x(self.l_margin) # reset X to original and move down by image height
+        # img_h_mm = max_width_mm  # approximate for square charts
+        # self.set_xy(x, y + img_h_mm + 2)
+        # if caption:
+        #     self.set_font(FONT_FAMILY, "", 9)
+        #     self.set_text_color(90, 90, 90)
+        #     self.cell(max_width_mm, 5, caption, align="C")
+        #     self.ln(5)
+
+        # Legend below chart
+        # if legend:
+        #     self.set_font(FONT_FAMILY, "", 9)
+        #     legend_colors = NOTION_CHART_COLORS
+        #     for idx, (label, val) in enumerate(data_pairs):
+        #         if idx == len(data_pairs):
+        #             break
+        #         r, g, b = [int(c*255) for c in legend_colors[idx]]
+        #         self.set_x(x)
+        #         # color circle
+        #         self.set_fill_color(r, g, b)
+        #         self.ellipse(self.get_x(), self.get_y()+1, 3, 3, style="F")
+        #         self.set_x(self.get_x() + 5)
+        #         self.set_text_color(60, 60, 60)
+        #         self.cell(0, 5, f"{label} ({val})", new_x="LMARGIN", new_y="NEXT")
+
+        # move cursor below legend
+        self.ln(4)
+        self.set_x(self.l_margin)  # reset X to original and move down by image height
+        # approximate height from width using square aspect
+        img_h_mm = max_width_mm  # approximate for square charts
+        self.set_xy(x, y + img_h_mm + 2)
+        # if caption:
+        #     self.set_font(FONT_FAMILY, "", 9)
+        #     self.set_text_color(90, 90, 90)
+        #     self.cell(max_width_mm, 6, caption, align="C")
+
+    @staticmethod
+    def build_pie_chart_bytes(title: str,
+                              data_pairs: list[tuple[str, int]],
+                              size_inch: float = 2.4) -> BytesIO:  # smaller charts
+        """Return a PNG image as bytes for a pie chart (non‑donut, full pie).(title, data_pairs, size_inch=3):
+
+        data_pairs: list of (label, value)
+        size_inch: figure size in inches (square)
+        """
+        labels = [p[0] for p in data_pairs]
+        sizes = [float(p[1]) for p in data_pairs]
+
+        # Clean small or zero slices
+        total = sum(sizes)
+        if total == 0:
+            # create an empty placeholder chart
+            fig, ax = plt.subplots(figsize=(size_inch, size_inch))
+            ax.text(0.5, 0.5, "No data", ha="center", va="center", fontsize=12)
+            ax.axis("off")
+        else:
+            fig, ax = plt.subplots(figsize=(size_inch, size_inch))
+            fig.patch.set_facecolor("white")
+
+            colors = NOTION_CHART_COLORS[: len(labels)]
+
+            pie = ax.pie(
+                sizes,
+                colors=colors,
+                startangle=90,
+                counterclock=False,  # full pie (no donut)
+            )
+
+            # Put numeric labels inside slices when large enough, otherwise external
+            for i, w in enumerate(pie[0]):
+                ang = (w.theta2 + w.theta1) / 2.0
+                x = np.cos(np.deg2rad(ang))
+                y = np.sin(np.deg2rad(ang))
+                pct = sizes[i]
+                # place label nearer to center
+                ax.text(x * 0.6, y * 0.6, f"{pct}", ha="center", va="center", fontsize=9)
+
+            # Title
+            # ax.set_title(title, fontsize=12, pad=6)
+            # ax.axis("equal")
+
+        buf = BytesIO()
+        plt.savefig(
+            buf, format="png", dpi=200, bbox_inches="tight", facecolor=fig.get_facecolor()
+        )
+        plt.close(fig)
+        buf.seek(0)
+        return buf
+
 
 # EXAMPLE USAGE --------------------------------------------------------------
 
@@ -282,216 +474,6 @@ NOTION_CHART_COLORS = [
     (255 / 255, 170 / 255, 153 / 255),  # coral
     (181 / 255, 181 / 255, 181 / 255),  # gray
 ]
-
-
-def build_pie_chart_bytes(title: str,
-                          data_pairs: list[tuple[str, float]],
-                          size_inch: float = 2.4) -> BytesIO:  # smaller charts
-    """Return a PNG image as bytes for a pie chart (non‑donut, full pie).(title, data_pairs, size_inch=3):
-
-    data_pairs: list of (label, value)
-    size_inch: figure size in inches (square)
-    """
-    labels = [p[0] for p in data_pairs]
-    sizes = [float(p[1]) for p in data_pairs]
-
-    # Clean small or zero slices
-    total = sum(sizes)
-    if total == 0:
-        # create an empty placeholder chart
-        fig, ax = plt.subplots(figsize=(size_inch, size_inch))
-        ax.text(0.5, 0.5, "No data", ha="center", va="center", fontsize=12)
-        ax.axis("off")
-    else:
-        fig, ax = plt.subplots(figsize=(size_inch, size_inch))
-        fig.patch.set_facecolor("white")
-
-        colors = NOTION_CHART_COLORS[: len(labels)]
-
-        wedges, _ = ax.pie(
-            sizes,
-            colors=colors,
-            startangle=90,
-            counterclock=False,  # full pie (no donut)
-        )
-
-        # Put numeric labels inside slices when large enough, otherwise external
-        for i, w in enumerate(wedges):
-            ang = (w.theta2 + w.theta1) / 2.0
-            x = np.cos(np.deg2rad(ang))
-            y = np.sin(np.deg2rad(ang))
-            pct = sizes[i]
-            # place label nearer to center
-            ax.text(x * 0.6, y * 0.6, f"{pct}", ha="center", va="center", fontsize=9)
-
-        # Title
-        # ax.set_title(title, fontsize=12, pad=6)
-        # ax.axis("equal")
-
-    buf = BytesIO()
-    plt.savefig(
-        buf, format="png", dpi=200, bbox_inches="tight", facecolor=fig.get_facecolor()
-    )
-    plt.close(fig)
-    buf.seek(0)
-    return buf
-
-
-# Attach staticmethod to class
-NotionPDF.build_pie_chart_bytes = build_pie_chart_bytes
-
-
-def add_pie_chart(self: NotionPDF,
-                  title: str,
-                  data_pairs: list[tuple[str, int]],
-                  max_width_mm: float = 70,
-                  size_inch: float = 2.4,
-                  caption: Optional[str] = None,
-                  legend: bool = True) -> None:
-    """Generate a pie chart in-memory and insert it into the PDF.
-
-    - max_width_mm: how wide the chart should be on the page (mm)
-    - size_inch: matplotlib figure size in inches (controls resolution)
-    - caption: optional text shown below the chart
-    """
-    img_buf = self.build_pie_chart_bytes(title, data_pairs, size_inch=size_inch)
-
-    # X/Y position calculations
-    x = self.get_x()
-    y = self.get_y()
-
-    try:
-        # fpdf2 supports file-like objects for image; try to use BytesIO directly
-        self.image(img_buf, x=x, y=y, w=max_width_mm)
-    except Exception:
-        # Fallback: write to a temporary file and use that (rare environments)
-        import tempfile
-
-        tmp = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
-        tmp.write(img_buf.getbuffer())
-        tmp.flush()
-        tmp.close()
-        self.image(tmp.name, x=x, y=y, w=max_width_mm)
-
-    # move cursor to the right of the image
-    self.set_y(y)
-    self.set_x(x + max_width_mm + 0)  # caller can add spacing
-
-    # Legend on the right side
-    legend_x = x + max_width_mm + 4
-    legend_y = y + 8
-
-    if legend:
-        self.set_font(FONT_FAMILY, "", 9)
-        legend_colors = NOTION_CHART_COLORS
-        for idx, (label, val) in enumerate(data_pairs):
-            r, g, b = [int(c * 255) for c in legend_colors[idx]]
-
-            self.set_xy(legend_x, legend_y)
-            self.set_fill_color(r, g, b)
-            self.ellipse(self.get_x(), self.get_y() + 1, 3, 3, style="F")
-
-            self.set_x(self.get_x() + 5)
-            self.set_text_color(60, 60, 60)
-            self.cell(40, 4, f"{label} ({val})", new_x="LMARGIN", new_y="NEXT")
-            legend_y += 5
-
-    # Caption under chart (optional)
-    if caption:
-        self.set_xy(x, y + max_width_mm - 2)
-        self.set_font(FONT_FAMILY, "", 9)
-        self.set_text_color(90, 90, 90)
-        self.cell(max_width_mm, 5, caption, align="C")
-
-    # Move cursor below
-    # self.set_y(y + max_width_mm + 8)
-    # self.set_x(self.l_margin) # reset X to original and move down by image height
-    # img_h_mm = max_width_mm  # approximate for square charts
-    # self.set_xy(x, y + img_h_mm + 2)
-    # if caption:
-    #     self.set_font(FONT_FAMILY, "", 9)
-    #     self.set_text_color(90, 90, 90)
-    #     self.cell(max_width_mm, 5, caption, align="C")
-    #     self.ln(5)
-
-    # Legend below chart
-    # if legend:
-    #     self.set_font(FONT_FAMILY, "", 9)
-    #     legend_colors = NOTION_CHART_COLORS
-    #     for idx, (label, val) in enumerate(data_pairs):
-    #         if idx == len(data_pairs):
-    #             break
-    #         r, g, b = [int(c*255) for c in legend_colors[idx]]
-    #         self.set_x(x)
-    #         # color circle
-    #         self.set_fill_color(r, g, b)
-    #         self.ellipse(self.get_x(), self.get_y()+1, 3, 3, style="F")
-    #         self.set_x(self.get_x() + 5)
-    #         self.set_text_color(60, 60, 60)
-    #         self.cell(0, 5, f"{label} ({val})", new_x="LMARGIN", new_y="NEXT")
-
-    # move cursor below legend
-    self.ln(4)
-    self.set_x(self.l_margin)  # reset X to original and move down by image height
-    # approximate height from width using square aspect
-    img_h_mm = max_width_mm  # approximate for square charts
-    self.set_xy(x, y + img_h_mm + 2)
-    # if caption:
-    #     self.set_font(FONT_FAMILY, "", 9)
-    #     self.set_text_color(90, 90, 90)
-    #     self.cell(max_width_mm, 6, caption, align="C")
-
-
-# bind to class
-NotionPDF.add_pie_chart = add_pie_chart
-
-
-def add_multiple_pie_charts(self: NotionPDF,
-                            charts: list[tuple[str, list[tuple[str, int]]]],
-                            per_row: int = 2,
-                            chart_width: float = 50,
-                            h_spacing: float = 45,
-                            v_spacing: float = 16,
-                            size_inch: float = 3
-                            ) -> None:
-    """Add several pie charts.
-
-    charts: list of (title, data_pairs)
-    per_row: how many charts per row
-    chart_width: width per chart in mm
-    h_spacing, v_spacing: spacing in mm
-    """
-
-    x_start = self.get_x()
-    y = self.get_y()
-
-    for idx, (title, pairs) in enumerate(charts):
-        col = idx % per_row
-        if col == 0 and idx != 0:
-            # new row
-            y = y + chart_width + v_spacing
-            x = x_start
-            # check for page overflow
-            if y + chart_width + v_spacing > self.h - self.b_margin:
-                self.add_page()
-                y = self.get_y()
-        else:
-            x = x_start + col * (chart_width + h_spacing)
-
-        self.set_xy(x, y)
-        caption = title
-        self.add_pie_chart(
-            title, pairs, max_width_mm=chart_width, size_inch=size_inch, caption=caption
-        )
-
-    # move cursor below the charts
-    final_row_count = (len(charts) + per_row - 1) // per_row
-    self.set_y(y + final_row_count * (chart_width + v_spacing))
-    self.set_x(self.l_margin)
-
-
-# bind to class
-NotionPDF.add_multiple_pie_charts = add_multiple_pie_charts
 
 # -------------------------
 # EXAMPLE USAGE (charts)

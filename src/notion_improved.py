@@ -32,12 +32,12 @@ def make_pie_chart(title: str, data_pairs: list[tuple[str, float]], outfile: str
     fig, ax = plt.subplots(figsize=(3, 3))  # small footprint
     fig.patch.set_facecolor("white")
 
-    wedges, _ = ax.pie(
+    pie = ax.pie(
         sizes, colors=NOTION_COLORS[: len(labels)], startangle=90, counterclock=False
     )
 
     # Adding data labels directly on slices
-    for i, w in enumerate(wedges):
+    for i, w in enumerate(pie[0]):
         ang = (w.theta2 + w.theta1) / 2
         x = np.cos(np.deg2rad(ang))
         y = np.sin(np.deg2rad(ang))

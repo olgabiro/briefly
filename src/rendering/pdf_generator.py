@@ -1,4 +1,4 @@
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Any
 
 from fpdf import FPDF, XPos, YPos
 
@@ -22,8 +22,8 @@ PRIORITY_COLORS = {
 class PDF(FPDF):
     style: Style
 
-    def __init__(self, style: Style, **kwargs) -> None:
-        super().__init__(**kwargs)
+    def __init__(self, style: Style, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
         self.style = style
         self.set_margin(25)
 
@@ -171,7 +171,7 @@ class PDF(FPDF):
         left_padding = 6
         top_padding = 2
 
-        stripe_color: tuple[int, int, int] = self.style.category_colors.get(ticket.category)
+        stripe_color: tuple[int, int, int] = self.style.category_colors.get(ticket.category, self.style.border_color)
         self.set_fill_color(*stripe_color)
         self.rect(
             start_x,
@@ -201,7 +201,7 @@ class PDF(FPDF):
         self.set_xy(start_x + left_padding, start_y + line_height + 2 * top_padding)
         self.tag(ticket.issue_type, Status.OTHER)
         if ticket.priority:
-            dot_color: tuple[int, int, int] | None = PRIORITY_COLORS.get(ticket.priority)
+            dot_color: tuple[int, int, int] = PRIORITY_COLORS.get(ticket.priority, (217, 241, 208))
             dot_x = self.get_x() + left_padding
             dot_y = self.get_y() + (line_height - 3) / 2
             self.set_fill_color(*dot_color)
