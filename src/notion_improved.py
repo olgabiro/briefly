@@ -344,7 +344,7 @@ def generate_notion_pdf() -> None:
     pdf.set_text_color(90, 90, 90)
     pdf.cell(chart_width, 6, "Story Points by Category", align="C")
 
-    pdf.output("notion_improved_report.pdf")
+    pdf.output("./output/notion_improved_report.pdf")
 
 
 if __name__ == "__main__":

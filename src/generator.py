@@ -79,7 +79,7 @@ def generate_minimalist() -> None:
         pdf.ln(8)
         row_index += 1
 
-    pdf.output("report.pdf")
+    pdf.output("./output/report.pdf")
 
 
 def generate_stripe_style() -> None:
@@ -144,7 +144,7 @@ def generate_stripe_style() -> None:
         pdf.ln(8)
         row_index += 1
 
-    pdf.output("report_stripe.pdf")
+    pdf.output("./output/report_stripe.pdf")
 
 
 def generate_notion_style() -> None:
@@ -214,7 +214,7 @@ def generate_notion_style() -> None:
         pdf.ln(8)
         row_index += 1
 
-    pdf.output("report_notion.pdf")
+    pdf.output("./output/report_notion.pdf")
 
 
 if __name__ == "__main__":

@@ -457,7 +457,7 @@ def generate_notion_pdf() -> None:
         transformed_rows.append((key, summary, status, assignee))
     pdf.formatted_table(headers, transformed_rows, col_widths)
 
-    pdf.output("notion_report.pdf")
+    pdf.output("./output/notion_report.pdf")
 
 
 # -------------------------
@@ -498,4 +498,4 @@ if __name__ == "__main__":
     ]
 
     pdf.add_multiple_pie_charts(charts, per_row=2, chart_width=50, h_spacing=55)
-    pdf.output("notion_report_with_charts.pdf")
+    pdf.output("./output/notion_report_with_charts.pdf")

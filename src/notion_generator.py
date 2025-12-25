@@ -149,7 +149,7 @@ def generate_notion_pdf() -> None:
 
     pdf.tag("Last updated 1 hour ago")
 
-    pdf.output("notion_report.pdf")
+    pdf.output("./output/notion_report.pdf")
 
 
 if __name__ == "__main__":

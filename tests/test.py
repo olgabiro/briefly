@@ -78,7 +78,7 @@ def test():
     pdf.add_page()
     pdf.bar_chart([10, 5, 8, 3, 2, 7, 1])
 
-    pdf.output("test.pdf")
+    pdf.output("./output/test.pdf")
 
 
 if __name__ == "__main__":
