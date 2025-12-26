@@ -1,4 +1,4 @@
-![CI](https://github.com/olgabiro/fpdf-reporting/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/olgabiro/fpdf-reporting/actions/workflows/build.yml/badge.svg)
 
 A simple reporting library for generating stunning reports for JIRA tickets.
 
