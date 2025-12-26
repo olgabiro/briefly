@@ -98,7 +98,6 @@ def test_styled_table(pdf: PDF):
     assert pdf.get_y() == 66
 
 
-@pytest.mark.skip
 def test_tag(pdf: PDF):
     width, height = pdf.tag("Test tag", Status.IN_PROGRESS)
     assert pdf.font_family == "helvetica"
@@ -107,7 +106,6 @@ def test_tag(pdf: PDF):
     assert height == pytest.approx(4.5, 0.1)
 
 
-@pytest.mark.skip
 def test_ticket_card_long(pdf: PDF):
     ticket = Ticket(
         key="PD-1234",
