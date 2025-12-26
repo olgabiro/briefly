@@ -1,0 +1,1 @@
+![Coverage](https://img.shields.io/badge/coverage-${{ env.coverage }}%25-brightgreen)
