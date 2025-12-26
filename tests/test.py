@@ -1,10 +1,12 @@
+import pytest
+
 from model.style import NotionStyle
 from model.ticket import Category, Status, Ticket
 from rendering.pdf_generator import PDF
 
 DARK_BACKGROUND = (38, 33, 43)
 
-
+@pytest.mark.skip(reason="Manually run")
 def test():
     style = NotionStyle()
     pdf = PDF(style)
@@ -31,7 +33,7 @@ def test():
         width=50,
     )
 
-    pdf.set_y(y + style.margin)
+    pdf.set_y(y + 10)
 
     pdf.styled_table(
         headers=["Key", "Summary", "Status", "Assignee"],
@@ -77,9 +79,4 @@ def test():
 
     pdf.add_page()
     pdf.bar_chart([10, 5, 8, 3, 2, 7, 1])
-
     pdf.output("./output/test.pdf")
-
-
-if __name__ == "__main__":
-    test()

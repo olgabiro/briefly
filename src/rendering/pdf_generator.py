@@ -11,6 +11,10 @@ SECTION_TITLE_SIZE: int = 13
 TEXT_SIZE: int = 10
 LABEL_SIZE: int = 7
 
+_SMALL_SPACING: float = 2
+_MEDIUM_SPACING: float = 5
+_LARGE_SPACING: float = 10
+
 # Priority indicator
 PRIORITY_COLORS = {
     "High": (252, 216, 212),  # red
@@ -28,14 +32,13 @@ class PDF(FPDF):
         self.set_margin(25)
 
     def document_header(self, text: str, centered: bool = False) -> None:
-        font = self.style.font
-        self.set_font(font.font_family, "B", font.header_size)
+        self.set_font(FONT_FAMILY, "B", size=HEADER_SIZE)
         self.set_fill_color(*self.style.header_background)  # warm gray
         self.set_text_color(55, 53, 47)
         if centered:
             self.cell(
                 0,
-                font.header_size,
+                HEADER_SIZE,
                 text,
                 align="C",
                 fill=True,
@@ -43,23 +46,22 @@ class PDF(FPDF):
                 new_y=YPos.NEXT,
             )
         else:
-            self.cell(self.style.padding, font.header_size, "", fill=True)
+            self.cell(_MEDIUM_SPACING, HEADER_SIZE, "", fill=True)
             self.cell(
                 0,
-                font.header_size,
+                HEADER_SIZE,
                 text,
                 align="L",
                 fill=True,
                 new_x=XPos.LMARGIN,
                 new_y=YPos.NEXT,
             )
-        self.set_y(self.get_y() + self.style.margin)
+        self.set_y(self.get_y() + _LARGE_SPACING)
 
     def section_title(self, text: str) -> None:
-        font = self.style.font
-        self.set_font(font.font_family, "B", font.section_title_size)
+        self.set_font(FONT_FAMILY, "B", SECTION_TITLE_SIZE)
         self.set_text_color(*self.style.section_title_color)
-        self.cell(0, self.style.cell_height, text, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+        self.cell(0, 10, text, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
         self.ln(1)
 
     def summary_card(
@@ -71,7 +73,7 @@ class PDF(FPDF):
     ) -> tuple[float, float]:
         start_x = x or self.x
         start_y = y or self.y
-        padding = self.style.padding
+        padding = _MEDIUM_SPACING
         row_height = 6
         card_height = (len(items) * row_height) + 2 * padding
 
@@ -108,8 +110,7 @@ class PDF(FPDF):
         rows: list[tuple[str, str, str, str]],
         col_widths: list[int],
     ) -> None:
-        font = self.style.font
-        self.set_font(font.font_family, "B", font.table_header_size)
+        self.set_font(FONT_FAMILY, "B", TEXT_SIZE)
         self.set_fill_color(*self.style.table_header_color)
         self.set_text_color(*self.style.font_color)
 
@@ -118,29 +119,27 @@ class PDF(FPDF):
         self.ln(10)
 
         # rows
-        self.set_font(font.font_family, "", font.table_content_size)
+        self.set_font(FONT_FAMILY, "", LABEL_SIZE)
 
         for idx, row in enumerate(rows):
             self.set_fill_color(*self.style.table_row_colors[idx % 2])
             self.set_text_color(*self.style.font_color)
 
             for i, cell in enumerate(row):
-                self.cell(
-                    col_widths[i], font.table_content_size, cell, border="B", fill=True
-                )
+                self.cell(col_widths[i], LABEL_SIZE, cell, border="B", fill=True)
 
             self.ln()
-        self.set_y(self.get_y() + self.style.margin)
+        self.set_y(self.get_y() + _LARGE_SPACING)
 
     def tag(self, text: str, status: Status) -> Tuple[float, float]:
         bg = self.style.status_colors.get(
             status, self.style.status_colors[Status.OTHER]
         )
-        self.set_font(self.style.font.font_family, "", self.style.font.tag_size)
+        self.set_font(FONT_FAMILY, "", LABEL_SIZE)
         self.set_text_color(*self.style.font_color)
 
-        text_w = self.get_string_width(text) + self.style.tag_padding * 2
-        text_h = self.style.tag_padding + self.style.font.tag_size * 25.4 / 72.0
+        text_w = self.get_string_width(text) + _SMALL_SPACING * 2
+        text_h = _SMALL_SPACING + LABEL_SIZE * 25.4 / 72.0
         x, y = self.get_x(), self.get_y()
 
         self.set_fill_color(*bg)
@@ -148,14 +147,13 @@ class PDF(FPDF):
             x, y, text_w, text_h, style="F", round_corners=True, corner_radius=1.5
         )
 
-        self.set_xy(x + self.style.tag_padding - 1, y + 1)
-        self.cell(text_w, text_h - self.style.tag_padding, text, border=0)
+        self.set_xy(x + _SMALL_SPACING - 1, y + 1)
+        self.cell(text_w, text_h - _SMALL_SPACING, text, border=0)
         self.set_xy(x + text_w, y)  # end cell
         return text_w, text_h
 
     def detailed_tickets_table(self, tickets: list[Ticket]) -> None:
-        font = self.style.font
-        self.set_font(font.font_family, "", font.font_size)
+        self.set_font(FONT_FAMILY, "", TEXT_SIZE)
 
         for t in tickets:
             self.ticket_card_long(t)
@@ -219,7 +217,7 @@ class PDF(FPDF):
             width - 12, 4, f"SP: {ticket.story_points}   Component: {ticket.component}"
         )
 
-        self.set_y(start_y + height + self.style.padding)
+        self.set_y(start_y + height + _MEDIUM_SPACING)
 
     def bar_chart(self, values: list[int]) -> tuple[float, float]:
         spacing = 2

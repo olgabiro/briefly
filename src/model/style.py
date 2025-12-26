@@ -3,26 +3,10 @@ from typing import Optional, Tuple
 from model.ticket import Category, Status
 
 
-class Font:
-    font_family: str = "Helvetica"
-    font_file_regular: Optional[str] = None
-    font_file_bold: Optional[str] = None
-    header_size: int = 20
-    section_title_size: int = 13
-    table_header_size: int = 11
-    font_size: int = 10
-    table_content_size: int = 9
-    tag_size: int = 8
-
-
 class Style:
     category_colors: dict[Optional[Category], Tuple[int, int, int]]
     status_colors: dict[Status, Tuple[int, int, int]]
     chart_colors: list[Tuple[int, int, int]]
-    margin: int = 10
-    padding: int
-    tag_padding: int = 2
-    cell_height: int = 10
     card_background: Tuple[int, int, int]
     header_background: Tuple[int, int, int]
     table_header_color: Tuple[int, int, int]
@@ -31,7 +15,6 @@ class Style:
     section_title_color: Tuple[int, int, int]
     card_details_color: Tuple[int, int, int]
     border_color: Tuple[int, int, int] = (230, 230, 230)
-    font: Font = Font()
 
 
 class NotionStyle(Style):
@@ -58,7 +41,6 @@ class NotionStyle(Style):
         (255, 170, 153),  # coral
         (181, 181, 181),  # gray
     ]
-    padding: int = 5
     card_background: Tuple[int, int, int] = (255, 238, 189)
     header_background: Tuple[int, int, int] = (247, 246, 243)
     table_header_color: Tuple[int, int, int] = (243, 242, 239)
