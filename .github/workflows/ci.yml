@@ -37,7 +37,7 @@ jobs:
           COVERAGE=$(python -c "import json; print(int(json.load(open('coverage.json'))['totals']['percent_covered']))")
           echo "coverage=$COVERAGE" >> $GITHUB_ENV
       - name: Comment coverage on PR
-        if: github.event_name == 'pull_request'
+        if: always() && github.event_name == 'pull_request'
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           message: |
