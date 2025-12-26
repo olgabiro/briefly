@@ -27,6 +27,7 @@ dev = [
 lint = "fpdf_reporting.cli:lint"
 format = "fpdf_reporting.cli:format"
 typecheck = "fpdf_reporting.cli:typecheck"
+coverage = "fpdf_reporting.cli:coverage"
 
 [tool.ruff]
 line-length = 88

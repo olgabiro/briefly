@@ -11,3 +11,7 @@ def format() -> None:
 
 def typecheck() -> None:
     subprocess.run(["mypy", "src"], check=True)
+
+
+def coverage() -> None:
+    subprocess.run(["pytest", "--cov-report=html"], check=True)
