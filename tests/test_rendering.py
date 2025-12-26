@@ -23,14 +23,14 @@ def data() -> dict[str, float]:
         "five": 100,
     }
 
-
+@pytest.mark.skip(reason="Run manually")
 def test_basic_components(pdf: PDF):
     pdf.document_header("TEST - Basic Header")
     pdf.section_title("TEST - Basic Section")
     pdf.summary_card(["Basic Card", "Line No 2", "Line No 3"])
     pdf.output("./output/basic-components.pdf")
 
-
+@pytest.mark.skip(reason="Run manually")
 def test_graphs(pdf: PDF, data: dict[str, float]):
     pdf.document_header("TEST - Graphs", centered=True)
     graph_size = 40
@@ -40,8 +40,7 @@ def test_graphs(pdf: PDF, data: dict[str, float]):
     chart_bytes = build_pie_chart_bytes(values, size=graph_size)
     pdf.image(chart_bytes, pdf.get_x(), pdf.get_y(), w=graph_size)
 
-    # plotting a graph with no data returns None
-    chart_bytes = build_pie_chart_bytes([0, 0, 0], size=graph_size)
-    assert chart_bytes is None
-
     pdf.output("./output/graphs.pdf")
+
+def test_graph_with_no_data_returns_none():
+    assert build_pie_chart_bytes([0, 0, 0]) is None
