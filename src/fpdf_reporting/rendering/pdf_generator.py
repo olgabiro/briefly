@@ -48,7 +48,7 @@ class PDF(FPDF):
     def document_header(self, text: str, centered: bool = False) -> None:
         self.set_font(FONT_FAMILY, "B", size=HEADER_SIZE)
         self.set_fill_color(*self.style.header_background)  # warm gray
-        self.set_text_color(55, 53, 47)
+        self.set_text_color(*self.style.header_color)
         if centered:
             self.cell(
                 0,

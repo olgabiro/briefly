@@ -27,6 +27,7 @@ class Style:
     section_title_color: Tuple[int, int, int]
     card_details_color: Tuple[int, int, int]
     border_color: Tuple[int, int, int] = (230, 230, 230)
+    header_color: Tuple[int, int, int] = (55, 53, 47)
 
 
 class NotionStyle(Style):
@@ -64,3 +65,85 @@ class NotionStyle(Style):
     font_color: Tuple[int, int, int] = (55, 53, 47)
     section_title_color: Tuple[int, int, int] = (55, 53, 47)
     card_details_color: Tuple[int, int, int] = (80, 79, 75)
+
+
+class FrappeStyle(Style):
+    background_color: Tuple[int, int, int] = (239, 241, 245)
+    category_colors: dict[Optional[Category], Tuple[int, int, int]] = {
+        Category.COMMITTED: (223, 142, 29),
+        Category.NICE_TO_HAVE: (230, 69, 83),
+        Category.MAYBE: (114, 135, 253),
+        None: (220, 138, 120),
+    }
+    status_colors: dict[Status, Tuple[int, int, int]] = {
+        Status.READY_FOR_DEV: (230, 233, 239),
+        Status.ON_HOLD: (230, 233, 239),
+        Status.IN_PROGRESS: (230, 233, 239),
+        Status.READY_FOR_QA: (230, 233, 239),
+        Status.LOCAL_TESTING: (230, 233, 239),
+        Status.READY_TO_MERGE: (230, 233, 239),
+        Status.OTHER: (230, 233, 239),
+    }
+    chart_colors: list[Tuple[int, int, int]] = [
+        (220, 138, 120),
+        (221, 120, 120),
+        (234, 118, 203),
+        (136, 57, 239),
+        (210, 15, 57),
+        (230, 69, 83),
+        (254, 100, 11),
+        (223, 142, 29),
+        (64, 160, 43),
+        (23, 146, 153),
+        (4, 165, 229),
+        (32, 159, 181),
+        (30, 102, 245),
+        (114, 135, 253),
+    ]
+    card_background: Tuple[int, int, int] = (220, 224, 232)
+    header_background: Tuple[int, int, int] = (220, 138, 120)
+    table_header_color: Tuple[int, int, int] = (172, 176, 190)
+    table_row_colors: list[Tuple[int, int, int]] = [(220, 224, 232), (188, 192, 204)]
+    font_color: Tuple[int, int, int] = (76, 79, 105)
+    section_title_color: Tuple[int, int, int] = (92, 95, 119)
+    card_details_color: Tuple[int, int, int] = (92, 95, 119)
+    border_color: Tuple[int, int, int] = (156, 160, 176)
+    header_color = (76, 79, 105)
+
+
+class MochaStyle(Style):
+    background_color: Tuple[int, int, int] = (30, 30, 46)
+    category_colors: dict[Optional[Category], Tuple[int, int, int]] = {
+        Category.COMMITTED: (243, 139, 168),
+        Category.NICE_TO_HAVE: (203, 166, 247),
+        Category.MAYBE: (250, 179, 135),
+        None: (249, 226, 175),
+    }
+    status_colors: dict[Status, Tuple[int, int, int]] = {
+        Status.OTHER: (24, 24, 37),
+    }
+    chart_colors: list[Tuple[int, int, int]] = [
+        (220, 138, 120),
+        (221, 120, 120),
+        (234, 118, 203),
+        (136, 57, 239),
+        (210, 15, 57),
+        (230, 69, 83),
+        (254, 100, 11),
+        (223, 142, 29),
+        (64, 160, 43),
+        (23, 146, 153),
+        (4, 165, 229),
+        (32, 159, 181),
+        (30, 102, 245),
+        (114, 135, 253),
+    ]
+    card_background: Tuple[int, int, int] = (24, 24, 37)
+    header_background: Tuple[int, int, int] = (49, 50, 68)
+    table_header_color: Tuple[int, int, int] = (69, 71, 90)
+    table_row_colors: list[Tuple[int, int, int]] = [(30, 30, 46), (24, 24, 37)]
+    font_color: Tuple[int, int, int] = (205, 214, 244)
+    section_title_color: Tuple[int, int, int] = (186, 194, 222)
+    card_details_color: Tuple[int, int, int] = (186, 194, 222)
+    border_color: Tuple[int, int, int] = (49, 50, 68)
+    header_color = (205, 214, 244)
