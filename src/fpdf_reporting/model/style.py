@@ -2,6 +2,18 @@ from typing import Optional, Tuple
 
 from fpdf_reporting.model.ticket import Category, Status
 
+STRIPE_DARK = (10, 37, 64)
+STRIPE_LIGHT_BG = (246, 249, 252)
+STRIPE_GRAY_TEXT = (66, 84, 102)
+STRIPE_HEADER_BG = (230, 236, 244)
+STRIPE_ACCENT = (99, 91, 255)
+STRIPE_ROW_ALT = (242, 245, 252)
+
+MINIMALIST_HEADER_BG = (45, 62, 80)
+MINIMALIST_TEXT_COLOR = (255, 255, 255)
+MINIMALIST_TEXT_COLOR_GRAY = (45, 62, 80)
+MINIMALIST_ROW_ALT = (247, 249, 252)
+
 
 class Style:
     category_colors: dict[Optional[Category], Tuple[int, int, int]]
@@ -40,6 +52,10 @@ class NotionStyle(Style):
         (221, 148, 255),  # purple
         (255, 170, 153),  # coral
         (181, 181, 181),  # gray
+        (212, 228, 247),
+        (255, 232, 163),
+        (252, 216, 212),
+        (217, 241, 208),
     ]
     card_background: Tuple[int, int, int] = (255, 238, 189)
     header_background: Tuple[int, int, int] = (247, 246, 243)

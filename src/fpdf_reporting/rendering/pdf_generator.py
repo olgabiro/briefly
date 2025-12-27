@@ -67,6 +67,13 @@ class PDF(FPDF):
             )
         self.set_y(self.get_y() + _LARGE_SPACING)
 
+    def divider(self) -> None:
+        self.set_draw_color(*self.style.border_color)
+        x1, x2 = MARGIN_SIZE, self.w - MARGIN_SIZE
+        y = self.get_y() + _MEDIUM_SPACING
+        self.line(x1, y, x2, y)
+        self.ln(_MEDIUM_SPACING)
+
     def section_title(self, text: str) -> None:
         self.set_font(FONT_FAMILY, "B", SECTION_TITLE_SIZE)
         self.set_text_color(*self.style.section_title_color)
@@ -74,11 +81,11 @@ class PDF(FPDF):
         self.set_xy(self.get_x(), self.get_y() + _LARGE_SPACING)
 
     def summary_card(
-            self,
-            items: List[str],
-            width: int = 80,
-            x: Optional[float] = None,
-            y: Optional[float] = None,
+        self,
+        items: List[str],
+        width: int = 80,
+        x: Optional[float] = None,
+        y: Optional[float] = None,
     ) -> tuple[float, float]:
         start_x = x or self.x
         start_y = y or self.y
@@ -114,10 +121,10 @@ class PDF(FPDF):
         return start_x + width, start_y + card_height
 
     def styled_table(
-            self,
-            headers: list[str],
-            rows: list[tuple[str, str, str, str]],
-            col_widths: list[int],
+        self,
+        headers: list[str],
+        rows: list[tuple[str, str, str, str]],
+        col_widths: list[int],
     ) -> None:
         self.set_font(FONT_FAMILY, "B", TEXT_SIZE)
         self.set_fill_color(*self.style.table_header_color)
@@ -168,7 +175,7 @@ class PDF(FPDF):
             self.ticket_card_long(t)
 
     def ticket_card_long(
-            self, ticket: Ticket, x: Optional[float] = None, y: Optional[float] = None
+        self, ticket: Ticket, x: Optional[float] = None, y: Optional[float] = None
     ) -> None:
         start_x = x or self.x
         start_y = y or self.y
@@ -265,20 +272,21 @@ class PDF(FPDF):
 
         return x - spacing, start_y + height
 
-    def bar_chart(self, data: dict[str, float], caption: Optional[str] = None) -> tuple[float, float]:
+    def bar_chart(
+        self, data: dict[str, float], caption: Optional[str] = None
+    ) -> tuple[float, float]:
         x = self.x
         y = self.y
         self._plot_bar_chart(list(data.values()))
         self.legend(list(data.keys()), x + 30, y + _SMALL_SPACING, caption=caption)
-        self.set_xy(self.x + 15 , y)
+        self.set_xy(self.x + 15, y)
         return self.x, y + 30
 
-
     def pie_chart(
-            self,
-            data: dict[str, float],
-            width: float = 70,
-            caption: Optional[str] = None,
+        self,
+        data: dict[str, float],
+        width: float = 70,
+        caption: Optional[str] = None,
     ) -> None:
         """Generate a pie chart in-memory and insert it into the PDF."""
         img_buf = build_pie_chart_bytes(
@@ -298,7 +306,9 @@ class PDF(FPDF):
         legend_y = y + _SMALL_SPACING
         self.legend(list(data.keys()), legend_x, legend_y, caption=caption)
 
-    def legend(self, labels: list[str], x: float, y: float, caption: Optional[str] = None) -> None:
+    def legend(
+        self, labels: list[str], x: float, y: float, caption: Optional[str] = None
+    ) -> None:
         if caption:
             self.set_xy(x - 1, y)
             self.set_font(FONT_FAMILY, "", 9)
@@ -311,8 +321,13 @@ class PDF(FPDF):
             color = legend_colors[idx % len(legend_colors)]
             (_, y) = self.legend_label(color, label, x, y)
 
-    def legend_label(self, color: tuple[int, int, int], label: str, x: Optional[float] = None,
-                     y: Optional[float] = None) -> tuple[float, float]:
+    def legend_label(
+        self,
+        color: tuple[int, int, int],
+        label: str,
+        x: Optional[float] = None,
+        y: Optional[float] = None,
+    ) -> tuple[float, float]:
         start_x = x or self.x
         start_y = y or self.y
 
