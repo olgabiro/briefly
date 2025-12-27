@@ -61,14 +61,14 @@ def test_graph_with_negative_values():
 
 def test_header(pdf: PDF):
     pdf.document_header("TEST - Header")
-    assert pdf.font_family == "helvetica"
+    assert pdf.font_family == "inter"
     assert pdf.get_y() == 55
     assert pdf.get_x() == 25
 
 
 def test_section_title(pdf: PDF):
     pdf.section_title("Test section")
-    assert pdf.font_family == "helvetica"
+    assert pdf.font_family == "inter"
     assert pdf.font_size_pt == 13
     assert pdf.get_y() == 45
     assert pdf.get_x() == 25
@@ -76,7 +76,7 @@ def test_section_title(pdf: PDF):
 
 def test_summary_card(pdf: PDF):
     (x, y) = pdf.summary_card(["Test summary card"])
-    assert pdf.font_family == "helvetica"
+    assert pdf.font_family == "inter"
     assert pdf.font_size_pt == 10
     assert x == 105
     assert y == 25 + 6 + 10
@@ -92,7 +92,7 @@ def test_styled_table(pdf: PDF):
         ],
         [30, 15, 20, 5],
     )
-    assert pdf.font_family == "helvetica"
+    assert pdf.font_family == "inter"
     assert pdf.font_size_pt == 7
     assert pdf.get_x() == 25
     assert pdf.get_y() == 66
@@ -100,9 +100,9 @@ def test_styled_table(pdf: PDF):
 
 def test_tag(pdf: PDF):
     width, height = pdf.tag("Test tag", Status.IN_PROGRESS)
-    assert pdf.font_family == "helvetica"
+    assert pdf.font_family == "inter"
     assert pdf.font_size_pt == 7
-    assert width == pytest.approx(12.92, 0.01)
+    assert width == pytest.approx(13.15, 0.01)
     assert height == pytest.approx(4.5, 0.1)
 
 
@@ -114,7 +114,7 @@ def test_ticket_card_long(pdf: PDF):
         issue_type="Bug",
     )
     pdf.ticket_card_long(ticket)
-    assert pdf.font_family == "helvetica"
+    assert pdf.font_family == "inter"
     assert pdf.font_size_pt == 9
     assert pdf.get_x() == 25
     assert pdf.get_y() == 25 + 22 + 5
@@ -122,7 +122,7 @@ def test_ticket_card_long(pdf: PDF):
 
 def test_pie_chart(pdf: PDF, data: dict[str, float]):
     pdf.pie_chart(data)
-    assert pdf.font_family == "helvetica"
-    assert pdf.font_size_pt == 9
-    assert pdf.get_x() == 25
-    assert pdf.get_y() == 59
+    assert pdf.font_family == "inter"
+    assert pdf.font_size_pt == 10
+    assert pdf.get_x() == 117
+    assert pdf.get_y() == 47
