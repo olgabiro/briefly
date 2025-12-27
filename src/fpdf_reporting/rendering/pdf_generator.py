@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Any, List, Optional, Tuple
 
 from fpdf import FPDF, XPos, YPos
@@ -6,7 +7,7 @@ from fpdf_reporting.model.style import Style
 from fpdf_reporting.model.ticket import Status, Ticket
 from fpdf_reporting.rendering.graphs import build_pie_chart_bytes
 
-FONT_FAMILY: str = "Helvetica"
+FONT_FAMILY: str = "Inter"
 HEADER_SIZE: int = 20
 SECTION_TITLE_SIZE: int = 13
 TEXT_SIZE: int = 10
@@ -24,6 +25,9 @@ PRIORITY_COLORS = {
     "Low": (217, 241, 208),  # green
 }
 
+PROJECT_ROOT = Path(__file__).parent.parent.parent.parent
+OUTPUT_DIR = PROJECT_ROOT / "fonts"
+
 
 class PDF(FPDF):
     style: Style
@@ -32,6 +36,9 @@ class PDF(FPDF):
         super().__init__(**kwargs)
         self.style = style
         self.set_margin(MARGIN_SIZE)
+        self.add_font(FONT_FAMILY, "", OUTPUT_DIR / "Inter-Regular.ttf")
+        self.add_font(FONT_FAMILY, "B", OUTPUT_DIR / "Inter-Bold.ttf")
+        self.add_font(FONT_FAMILY, "I", OUTPUT_DIR / "Inter-Italic.ttf")
 
     def document_header(self, text: str, centered: bool = False) -> None:
         self.set_font(FONT_FAMILY, "B", size=HEADER_SIZE)
@@ -67,11 +74,11 @@ class PDF(FPDF):
         self.set_xy(self.get_x(), self.get_y() + _LARGE_SPACING)
 
     def summary_card(
-        self,
-        items: List[str],
-        width: int = 80,
-        x: Optional[float] = None,
-        y: Optional[float] = None,
+            self,
+            items: List[str],
+            width: int = 80,
+            x: Optional[float] = None,
+            y: Optional[float] = None,
     ) -> tuple[float, float]:
         start_x = x or self.x
         start_y = y or self.y
@@ -107,10 +114,10 @@ class PDF(FPDF):
         return start_x + width, start_y + card_height
 
     def styled_table(
-        self,
-        headers: list[str],
-        rows: list[tuple[str, str, str, str]],
-        col_widths: list[int],
+            self,
+            headers: list[str],
+            rows: list[tuple[str, str, str, str]],
+            col_widths: list[int],
     ) -> None:
         self.set_font(FONT_FAMILY, "B", TEXT_SIZE)
         self.set_fill_color(*self.style.table_header_color)
@@ -161,7 +168,7 @@ class PDF(FPDF):
             self.ticket_card_long(t)
 
     def ticket_card_long(
-        self, ticket: Ticket, x: Optional[float] = None, y: Optional[float] = None
+            self, ticket: Ticket, x: Optional[float] = None, y: Optional[float] = None
     ) -> None:
         start_x = x or self.x
         start_y = y or self.y
@@ -221,7 +228,7 @@ class PDF(FPDF):
 
         self.set_y(start_y + height + _MEDIUM_SPACING)
 
-    def bar_chart(self, values: list[int]) -> tuple[float, float]:
+    def _plot_bar_chart(self, values: list[float]) -> tuple[float, float]:
         spacing = 2
         bar_width = 3
         x = self.x
@@ -258,12 +265,20 @@ class PDF(FPDF):
 
         return x - spacing, start_y + height
 
+    def bar_chart(self, data: dict[str, float], caption: Optional[str] = None) -> tuple[float, float]:
+        x = self.x
+        y = self.y
+        self._plot_bar_chart(list(data.values()))
+        self.legend(list(data.keys()), x + 30, y + _SMALL_SPACING, caption=caption)
+        self.set_xy(self.x + 15 , y)
+        return self.x, y + 30
+
+
     def pie_chart(
-        self,
-        data: dict[str, float],
-        width: float = 70,
-        caption: Optional[str] = None,
-        legend: bool = True,
+            self,
+            data: dict[str, float],
+            width: float = 70,
+            caption: Optional[str] = None,
     ) -> None:
         """Generate a pie chart in-memory and insert it into the PDF."""
         img_buf = build_pie_chart_bytes(
@@ -280,26 +295,33 @@ class PDF(FPDF):
         self.set_xy(x + width, y)
 
         legend_x = x + width + _MEDIUM_SPACING
-        legend_y = y + _MEDIUM_SPACING
+        legend_y = y + _SMALL_SPACING
+        self.legend(list(data.keys()), legend_x, legend_y, caption=caption)
 
-        if legend:
-            self.set_font(FONT_FAMILY, "", 9)
-            legend_colors = self.style.chart_colors
-            for idx, (label, val) in enumerate(data.items()):
-                color = legend_colors[idx % len(legend_colors)]
-
-                self.set_xy(legend_x, legend_y)
-                self.set_fill_color(*color)
-                self.ellipse(self.get_x(), self.get_y() + 1, 3, 3, style="F")
-
-                self.set_x(self.get_x() + 5)
-                self.set_text_color(60, 60, 60)
-                self.cell(40, 4, f"{label} ({val})", new_x="LMARGIN", new_y="NEXT")
-                legend_y += 5
-
-        # Caption under chart (optional)
+    def legend(self, labels: list[str], x: float, y: float, caption: Optional[str] = None) -> None:
         if caption:
-            self.set_xy(x, y + width - 2)
+            self.set_xy(x - 1, y)
             self.set_font(FONT_FAMILY, "", 9)
-            self.set_text_color(90, 90, 90)
-            self.cell(width, 5, caption, align="C")
+            self.cell(0, 5, caption, align="L")
+            y += 5 + _SMALL_SPACING
+
+        self.set_font(FONT_FAMILY, "", 9)
+        legend_colors = self.style.chart_colors
+        for idx, label in enumerate(labels):
+            color = legend_colors[idx % len(legend_colors)]
+            (_, y) = self.legend_label(color, label, x, y)
+
+    def legend_label(self, color: tuple[int, int, int], label: str, x: Optional[float] = None,
+                     y: Optional[float] = None) -> tuple[float, float]:
+        start_x = x or self.x
+        start_y = y or self.y
+
+        self.set_xy(start_x, start_y)
+        self.set_fill_color(*color)
+        self.ellipse(start_x, start_y + 0.5, 2, 2, style="F")
+        self.set_x(start_x + 2)
+        self.set_font(FONT_FAMILY, "", LABEL_SIZE)
+        self.set_text_color(*self.style.font_color)
+        self.cell(15, 3, label)
+        self.set_font(FONT_FAMILY, "", TEXT_SIZE)
+        return start_x + 15, start_y + 4

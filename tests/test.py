@@ -1,5 +1,3 @@
-import pytest
-
 from fpdf_reporting.model.style import NotionStyle
 from fpdf_reporting.model.ticket import Category, Status, Ticket
 from fpdf_reporting.rendering.pdf_generator import PDF
@@ -79,17 +77,18 @@ def test():
     )
 
     pdf.add_page()
+    data = {
+        "cat1": 10,
+        "cat3": 8,
+        "cat2": 5,
+        "cat4": 3,
+    }
 
-    (x, y) = pdf.bar_chart([10, 5, 8, 3, 2, 7, 1])
+    (x, y) = pdf.bar_chart(data, caption="Categories")
 
     pdf.set_x(x + 10)
     pdf.pie_chart(
-        {
-            "cat1": 10,
-            "cat3": 8,
-            "cat2": 5,
-            "cat4": 3,
-        },
+        data,
         width=30,
         caption="Categories",
     )
