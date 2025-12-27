@@ -84,6 +84,10 @@ def test():
         "cat3": 8,
         "cat2": 5,
         "cat4": 3,
+        "cat5": 2,
+        "cat6": 20,
+        "cat7": 15,
+        "cat8": 10,
     }
 
     (x, y) = pdf.bar_chart(data, caption="Categories")
