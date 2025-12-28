@@ -18,12 +18,6 @@ _SMALL_SPACING: float = 2
 _MEDIUM_SPACING: float = 5
 _LARGE_SPACING: float = 10
 
-# Priority indicator
-PRIORITY_COLORS = {
-    "High": (252, 216, 212),  # red
-    "Medium": (255, 232, 163),  # yellow
-    "Low": (217, 241, 208),  # green
-}
 
 PROJECT_ROOT = Path(__file__).parent.parent.parent.parent
 OUTPUT_DIR = PROJECT_ROOT / "fonts"
@@ -209,7 +203,7 @@ class PDF(FPDF):
         self.set_xy(start_x + left_padding, start_y + line_height + 2 * top_padding)
         self.tag(ticket.issue_type, Status.OTHER)
         if ticket.priority:
-            dot_color: tuple[int, int, int] = PRIORITY_COLORS.get(
+            dot_color: tuple[int, int, int] = self.style.priority_colors.get(
                 ticket.priority, (217, 241, 208)
             )
             dot_x = self.get_x() + left_padding

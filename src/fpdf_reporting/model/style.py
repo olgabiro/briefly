@@ -19,6 +19,7 @@ class Style:
     category_colors: dict[Optional[Category], Tuple[int, int, int]]
     status_colors: dict[Status, Tuple[int, int, int]]
     chart_colors: list[Tuple[int, int, int]]
+    priority_colors: dict[str, Tuple[int, int, int]]
     card_background: Tuple[int, int, int]
     header_background: Tuple[int, int, int]
     table_header_color: Tuple[int, int, int]
@@ -36,6 +37,11 @@ class NotionStyle(Style):
         Category.NICE_TO_HAVE: (255, 232, 163),
         Category.MAYBE: (212, 228, 247),
         None: (227, 226, 224),
+    }
+    priority_colors: dict[str, Tuple[int, int, int]] = {
+        "High": (252, 216, 212),  # red
+        "Medium": (255, 232, 163),  # yellow
+        "Low": (217, 241, 208),  # green
     }
     status_colors: dict[Status, Tuple[int, int, int]] = {
         Status.READY_FOR_DEV: (217, 241, 208),  # green
@@ -67,7 +73,7 @@ class NotionStyle(Style):
     card_details_color: Tuple[int, int, int] = (80, 79, 75)
 
 
-class FrappeStyle(Style):
+class LatteStyle(Style):
     background_color: Tuple[int, int, int] = (239, 241, 245)
     category_colors: dict[Optional[Category], Tuple[int, int, int]] = {
         Category.COMMITTED: (223, 142, 29),
@@ -100,6 +106,11 @@ class FrappeStyle(Style):
         (30, 102, 245),
         (114, 135, 253),
     ]
+    priority_colors: dict[str, Tuple[int, int, int]] = {
+        "High": (210, 15, 57),  # red
+        "Medium": (223, 142, 29),  # yellow
+        "Low": (64, 160, 43),  # green
+    }
     card_background: Tuple[int, int, int] = (220, 224, 232)
     header_background: Tuple[int, int, int] = (220, 138, 120)
     table_header_color: Tuple[int, int, int] = (172, 176, 190)
@@ -138,6 +149,11 @@ class MochaStyle(Style):
         (137, 180, 250),
         (180, 190, 254),
     ]
+    priority_colors: dict[str, Tuple[int, int, int]] = {
+        "High": (243, 139, 168),  # red
+        "Medium": (249, 226, 175),  # yellow
+        "Low": (166, 227, 161),  # green
+    }
     card_background: Tuple[int, int, int] = (24, 24, 37)
     header_background: Tuple[int, int, int] = (49, 50, 68)
     table_header_color: Tuple[int, int, int] = (69, 71, 90)

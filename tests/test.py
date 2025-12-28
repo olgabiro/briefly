@@ -71,7 +71,7 @@ def test():
                 status=Status.READY_TO_MERGE,
                 issue_type="Improvement",
                 story_points=13,
-                category="Maybe",
+                category=Category.MAYBE,
             ),
         ]
     )
