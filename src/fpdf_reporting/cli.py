@@ -10,7 +10,7 @@ def format() -> None:
 
 
 def typecheck() -> None:
-    subprocess.run(["mypy", "src"], check=True)
+    subprocess.run(["mypy", "--install-types", "src"], check=True)
 
 
 def coverage() -> None:
