@@ -1,5 +1,3 @@
-import pytest
-
 from fpdf_reporting.model.style import MochaStyle
 from fpdf_reporting.model.ticket import Category, Status, Ticket
 from fpdf_reporting.rendering.pdf_generator import PDF
@@ -7,7 +5,7 @@ from fpdf_reporting.rendering.pdf_generator import PDF
 DARK_BACKGROUND = (38, 33, 43)
 
 
-@pytest.mark.skip(reason="Manually run")
+# @pytest.mark.skip(reason="Manually run")
 def test():
     style = MochaStyle()
     pdf = PDF(style)

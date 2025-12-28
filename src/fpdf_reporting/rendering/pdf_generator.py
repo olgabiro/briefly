@@ -18,7 +18,6 @@ _SMALL_SPACING: float = 2
 _MEDIUM_SPACING: float = 5
 _LARGE_SPACING: float = 10
 
-
 PROJECT_ROOT = Path(__file__).parent.parent.parent.parent
 OUTPUT_DIR = PROJECT_ROOT / "fonts"
 
@@ -134,9 +133,9 @@ class PDF(FPDF):
             self.ln()
         self.set_y(self.get_y() + _LARGE_SPACING)
 
-    def tag(self, text: str, status: Status) -> Tuple[float, float]:
+    def tag(self, text: str, status: Optional[Status] = None) -> Tuple[float, float]:
         bg = self.style.status_colors.get(
-            status, self.style.status_colors[Status.OTHER]
+            status or Status.OTHER, self.style.status_colors[Status.OTHER]
         )
         self.set_font(FONT_FAMILY, "", LABEL_SIZE)
         self.set_text_color(*self.style.font_color)
@@ -167,10 +166,14 @@ class PDF(FPDF):
         start_x = x or self.x
         start_y = y or self.y
         width = self.w - self.r_margin - self.l_margin
-        height = 22
+        height = 15
         left_padding = 6
         top_padding = 2
 
+        self.set_draw_color(*self.style.border_color)
+        self.rect(
+            start_x, start_y, width, height, round_corners=True, corner_radius=1.5
+        )
         stripe_color: tuple[int, int, int] = self.style.category_colors.get(
             ticket.category, self.style.border_color
         )
@@ -178,21 +181,17 @@ class PDF(FPDF):
         self.rect(
             start_x,
             start_y,
-            2.5,
+            2,
             height,
             style="F",
             round_corners=True,
-            corner_radius=3,
-        )
-        self.set_draw_color(*self.style.border_color)
-        self.rect(
-            start_x, start_y, width, height, round_corners=True, corner_radius=1.5
+            corner_radius=2.2,
         )
 
         self.set_xy(start_x + left_padding, start_y + top_padding)
 
         key_width = 15
-        (_, line_height) = self.tag(ticket.status, ticket.status)
+        (_, line_height) = self.tag(ticket.status)
         self.set_font(FONT_FAMILY, "B", TEXT_SIZE)
         self.set_text_color(*self.style.font_color)
         self.set_x(self.get_x() + left_padding)
@@ -201,25 +200,21 @@ class PDF(FPDF):
         self.cell(width - key_width, line_height, ticket.summary, new_y=YPos.NEXT)
 
         self.set_xy(start_x + left_padding, start_y + line_height + 2 * top_padding)
-        self.tag(ticket.issue_type, Status.OTHER)
         if ticket.priority:
             dot_color: tuple[int, int, int] = self.style.priority_colors.get(
                 ticket.priority, (217, 241, 208)
             )
-            dot_x = self.get_x() + left_padding
-            dot_y = self.get_y() + (line_height - 3) / 2
-            self.set_fill_color(*dot_color)
-            self.ellipse(dot_x, dot_y, 3, 3, style="F")
-            self.set_x(dot_x + 3)
-            self.cell(10, line_height, ticket.priority)
+            self.legend_label(
+                dot_color, ticket.priority, x=self.x + _SMALL_SPACING, y=self.y + 0.5
+            )
+            self.set_xy(self.x + _SMALL_SPACING, self.y - 0.5)
 
-        self.set_xy(start_x + left_padding, self.get_y() + line_height + top_padding)
-
-        self.set_font(FONT_FAMILY, "", 9)
-        self.cell(
-            width - 12, 4, f"SP: {ticket.story_points}   Component: {ticket.component}"
-        )
-
+        self.tag(ticket.issue_type)
+        self.set_x(self.x + _SMALL_SPACING)
+        self.tag(f"SP: {ticket.story_points or 'N/A'}")
+        self.set_x(self.x + _SMALL_SPACING)
+        if ticket.component:
+            self.tag(ticket.component)
         self.set_y(start_y + height + _MEDIUM_SPACING)
 
     def _plot_bar_chart(self, values: list[float]) -> tuple[float, float]:
