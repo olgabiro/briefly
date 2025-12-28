@@ -30,7 +30,7 @@ jobs:
         run: lint
 
       - name: Typecheck
-        run: typecheck
+        run: mypy --install-types src
 
       - name: Run tests + coverage
         run: pytest --cov-report=json
