@@ -2,15 +2,15 @@ import subprocess
 
 
 def lint() -> None:
-    subprocess.run(["ruff", "check", ".", "--fix"])
+    subprocess.run(["ruff", "check", ".", "--fix"], check=True)
 
 
 def format() -> None:
-    subprocess.run(["ruff", "format", "."])
+    subprocess.run(["ruff", "format", "."], check=True)
 
 
 def typecheck() -> None:
-    subprocess.run(["mypy", "src"])
+    subprocess.run(["mypy", "src"], check=True)
 
 
 def coverage() -> None:
