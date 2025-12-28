@@ -16,8 +16,6 @@ def test():
 
     pdf.document_header("JIRA Summary Test")
 
-    pdf.document_header("Other header", centered=True)
-
     pdf.section_title("Overview")
     pdf.summary_card(
         ["Total Tickets: 58", "Completed: 42", "In Progress: 10", "Blocked: 6"],

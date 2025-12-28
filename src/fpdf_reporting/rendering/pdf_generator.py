@@ -40,36 +40,24 @@ class PDF(FPDF):
         self.add_font(FONT_FAMILY, "B", OUTPUT_DIR / "Inter-Bold.ttf")
         self.add_font(FONT_FAMILY, "I", OUTPUT_DIR / "Inter-Italic.ttf")
 
-    def footer(self):
+    def footer(self) -> None:
         self.set_y(-15)
         self.set_font(FONT_FAMILY, "I", 8)
         self.cell(0, 10, f"Page {self.page_no()}", align="C")
 
-    def document_header(self, text: str, centered: bool = False) -> None:
+    def document_header(self, text: str) -> None:
         self.set_font(FONT_FAMILY, "B", size=HEADER_SIZE)
         self.set_fill_color(*self.style.header_background)  # warm gray
         self.set_text_color(*self.style.header_color)
-        if centered:
-            self.cell(
-                0,
-                HEADER_SIZE,
-                text,
-                align="C",
-                fill=True,
-                new_x=XPos.LMARGIN,
-                new_y=YPos.NEXT,
-            )
-        else:
-            self.cell(_MEDIUM_SPACING, HEADER_SIZE, "", fill=True)
-            self.cell(
-                0,
-                HEADER_SIZE,
-                text,
-                align="L",
-                fill=True,
-                new_x=XPos.LMARGIN,
-                new_y=YPos.NEXT,
-            )
+        self.cell(
+            0,
+            HEADER_SIZE,
+            text,
+            align="C",
+            fill=True,
+            new_x=XPos.LMARGIN,
+            new_y=YPos.NEXT,
+        )
         self.set_y(self.get_y() + _LARGE_SPACING)
 
     def divider(self) -> None:
