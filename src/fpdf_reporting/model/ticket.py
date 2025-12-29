@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import date, datetime
 from enum import StrEnum
 from typing import Optional
 
@@ -28,7 +28,7 @@ class Ticket:
     issue_type: str
     start_date: Optional[datetime] = None
     end_date: Optional[datetime] = None
-    due_date: Optional[datetime] = None
+    due_date: Optional[date] = None
     flagged: bool = False
     priority: Optional[str] = None
     story_points: Optional[int] = None
