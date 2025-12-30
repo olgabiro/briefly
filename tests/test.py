@@ -13,7 +13,7 @@ DARK_BACKGROUND = (38, 33, 43)
 def create_ticket():
     status = random.choice(list(Status))
     category = random.choices([random.choice(list(Category)), None], weights=[9, 1])[0]
-    issue_type = random.choice(["Bug", "Improvement", "Story"])
+    issue_type = random.choice(["Bug", "Improvement", "Feature", "Prod Bug"])
     due_day = random.randint(1, 31)
     start_day = random.randint(1, due_day)
     end_day = random.choices([random.randint(start_day, 31), None], weights=[2, 8])[0]

@@ -18,7 +18,7 @@ _SMALL_SPACING: float = 2
 _MEDIUM_SPACING: float = 5
 _LARGE_SPACING: float = 10
 
-PROJECT_ROOT = Path(__file__).parent.parent.parent.parent
+PROJECT_ROOT = Path(__file__).parents[3]
 OUTPUT_DIR = PROJECT_ROOT / "fonts"
 
 
@@ -66,18 +66,13 @@ class PDF(FPDF):
         self.cell(0, 10, text, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
         self.set_xy(self.get_x(), self.get_y() + _LARGE_SPACING)
 
-    def summary_card(
-        self,
-        items: List[str],
-        width: int = 80,
-        x: Optional[float] = None,
-        y: Optional[float] = None,
-    ) -> tuple[float, float]:
-        start_x = x or self.x
-        start_y = y or self.y
+    def summary_card(self, items: List[str], width: int = 80) -> tuple[float, float]:
         padding = _MEDIUM_SPACING
         row_height = 6
         card_height = (len(items) * row_height) + 2 * padding
+        self.__break_page_if_needed(card_height)
+        start_x = self.x
+        start_y = self.y
 
         if start_y + card_height >= self.h - self.b_margin:
             self.add_page()
@@ -165,28 +160,16 @@ class PDF(FPDF):
     def ticket_card_long(self, ticket: Ticket) -> None:
         width = self.w - self.r_margin - self.l_margin
         height = 16
-        if self.y + height >= self.h - self.b_margin:
-            self.add_page()
+        self.__break_page_if_needed(height)
         start_x = self.x
         start_y = self.y
         left_padding = 6
         block_width = 20
 
-        self.set_draw_color(*self.style.border_color)
-        self.rect(start_x, start_y, width, height, round_corners=True, corner_radius=2)
         stripe_color: tuple[int, int, int] = self.style.category_colors.get(
             ticket.category, self.style.border_color
         )
-        self.set_fill_color(*stripe_color)
-        self.rect(
-            start_x,
-            start_y,
-            2,
-            height,
-            style="F",
-            round_corners=True,
-            corner_radius=2.2,
-        )
+        self.accent_card(stripe_color, width, height)
 
         self.set_xy(start_x + left_padding, start_y + _SMALL_SPACING)
         key_width = 12
@@ -229,12 +212,14 @@ class PDF(FPDF):
             self.tag(ticket.component)
         self.set_y(start_y + height + _MEDIUM_SPACING)
 
+    def __break_page_if_needed(self, component_height: float) -> None:
+        if self.y + component_height >= self.h - self.b_margin:
+            self.add_page()
+
     def ticket_card_short(self, ticket: Ticket) -> None:
         width = 77.5
         height = 30
-
-        if self.y + height >= self.h - self.b_margin:
-            self.add_page()
+        self.__break_page_if_needed(height)
 
         start_x = self.x
         start_y = self.y
@@ -242,29 +227,10 @@ class PDF(FPDF):
         summary_start = start_x + 24
         row_height = 7
 
-        self.set_draw_color(*self.style.border_color)
-        self.rect(
-            start_x,
-            start_y,
-            width,
-            height,
-            style="D",
-            round_corners=True,
-            corner_radius=2,
-        )
         stripe_color: tuple[int, int, int] = self.style.category_colors.get(
             ticket.category, self.style.border_color
         )
-        self.set_fill_color(*stripe_color)
-        self.rect(
-            start_x,
-            start_y,
-            2,
-            height,
-            style="F",
-            round_corners=True,
-            corner_radius=2.2,
-        )
+        self.accent_card(stripe_color, width, height)
 
         self.set_xy(start_x + _MEDIUM_SPACING, start_y + _SMALL_SPACING)
         self.set_font(FONT_FAMILY, "B", LABEL_SIZE)
@@ -433,3 +399,28 @@ class PDF(FPDF):
         self.cell(15, 5, label)
         self.set_font(FONT_FAMILY, "", TEXT_SIZE)
         return start_x + 18, start_y + 5
+
+    def accent_card(
+        self, accent_color: tuple[int, int, int], width: float, height: float
+    ) -> None:
+        self.set_draw_color(*self.style.border_color)
+        self.rect(
+            self.x,
+            self.y,
+            width,
+            height,
+            style="D",
+            round_corners=True,
+            corner_radius=2,
+        )
+
+        self.set_fill_color(*accent_color)
+        self.rect(
+            self.x,
+            self.y,
+            2,
+            height,
+            style="F",
+            round_corners=True,
+            corner_radius=2.2,
+        )

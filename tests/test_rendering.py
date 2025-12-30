@@ -88,8 +88,8 @@ def test_tag(pdf: PDF):
     assert width == pytest.approx(13.15, 0.01)
     assert height == 5
 
-
-def test_ticket_card_long_mandatory_properties(pdf: PDF):
+@patch.object(PDF, "tag")
+def test_ticket_card_long_mandatory_properties(tag_mock: MagicMock, pdf: PDF):
     ticket = Ticket(
         key="PD-1234",
         summary="Test ticket",
@@ -100,29 +100,29 @@ def test_ticket_card_long_mandatory_properties(pdf: PDF):
     pdf.rect = MagicMock()
     pdf.ticket_card_long(ticket)
     assert pdf.font_family == "inter"
-    assert pdf.font_size_pt == 7
+    assert pdf.font_size_pt == 10
     assert pdf.get_x() == 25
     assert pdf.get_y() == 25 + 16 + 5
 
+    tag_calls = [
+        call(ticket.issue_type),
+        call(Status.IN_PROGRESS),
+        call("SP: N/A")
+    ]
+    tag_mock.assert_has_calls(tag_calls, any_order=True)
     cell_calls = [
         call(12, 5, ticket.key, align="R"),
-        call(ANY, 5, "Bug", align="C"),
-        call(ANY, 5, ticket.status, align="C"),
         call(ANY, 5, "Test ticket", new_y=YPos.NEXT),
-        call(ANY, 5, "SP: N/A", align="C"),
     ]
     pdf.cell.assert_has_calls(cell_calls, any_order=True)
     rect_calls = [
-        call(25, 25, ANY, 16, round_corners=True, corner_radius=2),
+        call(25, 25, ANY, 16, style="D", round_corners=True, corner_radius=2),
         call(25, 25, 2, 16, style="F", round_corners=True, corner_radius=2.2),
-        call(31, 27, ANY, 5, style="F", round_corners=True, corner_radius=1.5),
-        call(51, 29, ANY, 5, style="F", round_corners=True, corner_radius=1.5),
-        call(71, 29, ANY, 5, style="F", round_corners=True, corner_radius=1.5),
     ]
     pdf.rect.assert_has_calls(rect_calls, any_order=True)
 
-
-def test_ticket_card_long_with_all_properties(pdf: PDF):
+@patch.object(PDF, "tag")
+def test_ticket_card_long_with_all_properties(tag_mock: MagicMock, pdf: PDF):
     ticket = Ticket(
         key="PD-1234",
         summary="Test ticket",
@@ -144,26 +144,26 @@ def test_ticket_card_long_with_all_properties(pdf: PDF):
     pdf.rect = MagicMock()
     pdf.ticket_card_long(ticket)
     assert pdf.font_family == "inter"
-    assert pdf.font_size_pt == 7
+    assert pdf.font_size_pt == 10
     assert pdf.get_x() == 25
     assert pdf.get_y() == 25 + 16 + 5
 
+    tag_calls = [
+        call(ticket.component),
+        call(ticket.status),
+        call(ticket.issue_type),
+        call("SP: 8")
+    ]
+    tag_mock.assert_has_calls(tag_calls, any_order=True)
     cell_calls = [
         call(12, 5, ticket.key, align="R"),
-        call(ANY, 5, "Bug", align="C"),
         call(ANY, 5, "High"),
-        call(ANY, 5, ticket.component, align="C"),
-        call(ANY, 5, ticket.status, align="C"),
         call(ANY, 5, "Test ticket", new_y=YPos.NEXT),
-        call(ANY, 5, "SP: 8", align="C"),
     ]
     pdf.cell.assert_has_calls(cell_calls, any_order=True)
     rect_calls = [
-        call(25, 25, ANY, 16, round_corners=True, corner_radius=2),
+        call(25, 25, ANY, 16, style="D", round_corners=True, corner_radius=2),
         call(25, 25, 2, 16, style="F", round_corners=True, corner_radius=2.2),
-        call(31, 27, ANY, 5, style="F", round_corners=True, corner_radius=1.5),
-        call(51, 29, ANY, 5, style="F", round_corners=True, corner_radius=1.5),
-        call(71, 29, ANY, 5, style="F", round_corners=True, corner_radius=1.5),
         call(ANY, 27, 5, 5, style="D", round_corners=True, corner_radius=1.5),
     ]
     pdf.rect.assert_has_calls(rect_calls, any_order=True)
@@ -182,8 +182,8 @@ def test_detailed_tickets_table(mock_method, pdf: PDF):
     pdf.detailed_tickets_table([MagicMock(), MagicMock()])
     assert mock_method.call_count == 2
 
-
-def test_ticket_card_short_with_all_properties(pdf: PDF):
+@patch.object(PDF, "tag")
+def test_ticket_card_short_with_all_properties(tag_mock: MagicMock, pdf: PDF):
     ticket = Ticket(
         key="PD-1234",
         summary="Test ticket",
@@ -209,18 +209,20 @@ def test_ticket_card_short_with_all_properties(pdf: PDF):
     assert pdf.get_x() == 25 + 77.5 + 5
     assert pdf.get_y() == 25
 
+    tag_calls = [
+        call(Status.IN_PROGRESS, Status.IN_PROGRESS),
+    ]
+    tag_mock.assert_has_calls(tag_calls, any_order=True)
     cell_calls = [
         call(19, 7, ticket.key, align="R", new_x=XPos.LEFT, new_y=YPos.NEXT),
         call(19, 7, "Bug", align="R", new_x=XPos.LEFT, new_y=YPos.NEXT),
         call(15, 7, "High", new_x=XPos.RIGHT),
-        call(ANY, 5, ticket.status, align="C"),
         call(15, 7, "SP: 8", new_x=XPos.RIGHT),
     ]
     pdf.cell.assert_has_calls(cell_calls, any_order=True)
     rect_calls = [
         call(25, 25, 77.5, 30, style="D", round_corners=True, corner_radius=2),
         call(25, 25, 2, 30, style="F", round_corners=True, corner_radius=2.2),
-        call(30, 27, ANY, 5, style="F", round_corners=True, corner_radius=1.5),
         call(95.5, 48, 5, 5, style="D", round_corners=True, corner_radius=1.5),
     ]
     pdf.rect.assert_has_calls(rect_calls, any_order=True)
