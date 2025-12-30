@@ -1,3 +1,5 @@
+import pytest
+
 from fpdf_reporting.model.style import MochaStyle
 from fpdf_reporting.model.ticket import Category, Status, Ticket
 from fpdf_reporting.rendering.pdf_generator import PDF
@@ -5,7 +7,7 @@ from fpdf_reporting.rendering.pdf_generator import PDF
 DARK_BACKGROUND = (38, 33, 43)
 
 
-# @pytest.mark.skip(reason="Manually run")
+@pytest.mark.skip(reason="Manually run")
 def test():
     style = MochaStyle()
     pdf = PDF(style)
@@ -52,6 +54,7 @@ def test():
                 priority="High",
                 story_points=8,
                 category=Category.COMMITTED,
+                component="Strategical",
             ),
             Ticket(
                 key="PD-2134",
@@ -72,6 +75,31 @@ def test():
                 category=Category.MAYBE,
             ),
         ]
+    )
+
+    pdf.ticket_card_short(
+        Ticket(
+            key="PD-34",
+            summary="Angular upgrade",
+            status=Status.READY_TO_MERGE,
+            issue_type="Improvement",
+            story_points=13,
+            category=Category.MAYBE,
+            component="Strategical",
+        )
+    )
+
+    pdf.ticket_card_short(
+        Ticket(
+            key="PD-2134",
+            summary="Postgres performance issues",
+            status=Status.ON_HOLD,
+            issue_type="Bug",
+            priority="Low",
+            story_points=13,
+            flagged=True,
+            category=Category.NICE_TO_HAVE,
+        )
     )
 
     pdf.add_page()

@@ -142,16 +142,15 @@ class PDF(FPDF):
 
         text_w = self.get_string_width(text) + _SMALL_SPACING * 2
         text_h = 5
-        x, y = self.get_x(), self.get_y()
+        x, y = self.x, self.y
 
         self.set_fill_color(*bg)
         self.rect(
             x, y, text_w, text_h, style="F", round_corners=True, corner_radius=1.5
         )
 
-        self.set_xy(x + _SMALL_SPACING - 1, y + 1)
-        self.cell(text_w, text_h, text)
-        self.set_xy(x + text_w, y)
+        self.cell(text_w, text_h, text, align="C")
+        self.set_x(x + text_w)
         return text_w, text_h
 
     def detailed_tickets_table(self, tickets: list[Ticket]) -> None:
@@ -226,6 +225,93 @@ class PDF(FPDF):
         if ticket.component:
             self.tag(ticket.component)
         self.set_y(start_y + height + _MEDIUM_SPACING)
+
+    def ticket_card_short(self, ticket: Ticket) -> None:
+        width = 77.5
+        height = 30
+        start_x = self.x
+        start_y = self.y
+        label_width = 15
+        summary_start = start_x + 24
+        row_height = 7
+
+        self.set_draw_color(*self.style.border_color)
+        self.rect(
+            start_x,
+            start_y,
+            width,
+            height,
+            style="D",
+            round_corners=True,
+            corner_radius=2,
+        )
+        stripe_color: tuple[int, int, int] = self.style.category_colors.get(
+            ticket.category, self.style.border_color
+        )
+        self.set_fill_color(*stripe_color)
+        self.rect(
+            start_x,
+            start_y,
+            2,
+            height,
+            style="F",
+            round_corners=True,
+            corner_radius=2.2,
+        )
+
+        self.set_xy(start_x + _MEDIUM_SPACING, start_y + _SMALL_SPACING)
+        self.set_font(FONT_FAMILY, "B", LABEL_SIZE)
+        self.cell(
+            19, row_height, ticket.key, align="R", new_x=XPos.LEFT, new_y=YPos.NEXT
+        )
+        self.set_font(FONT_FAMILY, "", LABEL_SIZE)
+        self.cell(
+            19,
+            row_height,
+            ticket.issue_type,
+            align="R",
+            new_x=XPos.LEFT,
+            new_y=YPos.NEXT,
+        )
+        self.tag(ticket.status, ticket.status)
+        self.set_x(summary_start)
+        self.cell(label_width, row_height, ticket.priority or "N/A", new_x=XPos.RIGHT)
+        self.cell(
+            label_width,
+            row_height,
+            f"SP: {ticket.story_points or 'N/A'}",
+            new_x=XPos.RIGHT,
+        )
+
+        self.set_font(FONT_FAMILY, "", TEXT_SIZE)
+        self.set_xy(summary_start, start_y + _SMALL_SPACING)
+        self.multi_cell(
+            46, 14.5, ticket.summary, max_line_height=7, align="L", new_y=YPos.NEXT
+        )
+
+        if ticket.flagged:
+            self.rect(
+                start_x + width - _SMALL_SPACING - 5,
+                start_y + height - _SMALL_SPACING - 5,
+                5,
+                5,
+                style="D",
+                round_corners=True,
+                corner_radius=1.5,
+            )
+            self.set_fill_color(*self.style.priority_colors["High"])
+            self.ellipse(
+                start_x + width - _SMALL_SPACING - 3.5,
+                start_y + height - _SMALL_SPACING - 3.5,
+                2,
+                2,
+                style="F",
+            )
+
+        if start_x == self.l_margin:
+            self.set_xy(start_x + width + _MEDIUM_SPACING, start_y)
+        else:
+            self.set_y(self.y + height + _MEDIUM_SPACING)
 
     def _plot_bar_chart(self, values: list[float]) -> tuple[float, float]:
         spacing = 2

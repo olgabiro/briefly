@@ -2,7 +2,7 @@ import datetime
 from unittest.mock import ANY, MagicMock, call, patch
 
 import pytest
-from fpdf import YPos
+from fpdf import XPos, YPos
 
 from fpdf_reporting.model.style import NotionStyle
 from fpdf_reporting.model.ticket import Category, Status, Ticket
@@ -106,10 +106,10 @@ def test_ticket_card_long_mandatory_properties(pdf: PDF):
 
     cell_calls = [
         call(12, 5, ticket.key, align="R"),
-        call(ANY, 5, "Bug"),
-        call(ANY, 5, ticket.status),
+        call(ANY, 5, "Bug", align="C"),
+        call(ANY, 5, ticket.status, align="C"),
         call(ANY, 5, "Test ticket", new_y=YPos.NEXT),
-        call(ANY, 5, "SP: N/A"),
+        call(ANY, 5, "SP: N/A", align="C"),
     ]
     pdf.cell.assert_has_calls(cell_calls, any_order=True)
     rect_calls = [
@@ -150,12 +150,12 @@ def test_ticket_card_long_with_all_properties(pdf: PDF):
 
     cell_calls = [
         call(12, 5, ticket.key, align="R"),
-        call(ANY, 5, "Bug"),
+        call(ANY, 5, "Bug", align="C"),
         call(ANY, 5, "High"),
-        call(ANY, 5, ticket.component),
-        call(ANY, 5, ticket.status),
+        call(ANY, 5, ticket.component, align="C"),
+        call(ANY, 5, ticket.status, align="C"),
         call(ANY, 5, "Test ticket", new_y=YPos.NEXT),
-        call(ANY, 5, "SP: 8"),
+        call(ANY, 5, "SP: 8", align="C"),
     ]
     pdf.cell.assert_has_calls(cell_calls, any_order=True)
     rect_calls = [
@@ -181,3 +181,46 @@ def test_pie_chart(pdf: PDF, data: dict[str, float]):
 def test_detailed_tickets_table(mock_method, pdf: PDF):
     pdf.detailed_tickets_table([MagicMock(), MagicMock()])
     assert mock_method.call_count == 2
+
+
+def test_ticket_card_short_with_all_properties(pdf: PDF):
+    ticket = Ticket(
+        key="PD-1234",
+        summary="Test ticket",
+        status=Status.IN_PROGRESS,
+        issue_type="Bug",
+        start_date=datetime.datetime(2023, 1, 1, 12, 13, 20),
+        end_date=datetime.datetime(2023, 1, 2, 15, 10, 1),
+        due_date=datetime.date(2023, 1, 3),
+        flagged=True,
+        priority="High",
+        story_points=8,
+        tester_story_points=8,
+        component="Strategical",
+        developer="Foo Bar",
+        assignee="Unassigned",
+        category=Category.COMMITTED,
+    )
+    pdf.cell = MagicMock()
+    pdf.rect = MagicMock()
+    pdf.ticket_card_short(ticket)
+    assert pdf.font_family == "inter"
+    assert pdf.font_size_pt == 10
+    assert pdf.get_x() == 25 + 77.5 + 5
+    assert pdf.get_y() == 25
+
+    cell_calls = [
+        call(19, 7, ticket.key, align="R", new_x=XPos.LEFT, new_y=YPos.NEXT),
+        call(19, 7, "Bug", align="R", new_x=XPos.LEFT, new_y=YPos.NEXT),
+        call(15, 7, "High", new_x=XPos.RIGHT),
+        call(ANY, 5, ticket.status, align="C"),
+        call(15, 7, "SP: 8", new_x=XPos.RIGHT),
+    ]
+    pdf.cell.assert_has_calls(cell_calls, any_order=True)
+    rect_calls = [
+        call(25, 25, 77.5, 30, style="D", round_corners=True, corner_radius=2),
+        call(25, 25, 2, 30, style="F", round_corners=True, corner_radius=2.2),
+        call(30, 27, ANY, 5, style="F", round_corners=True, corner_radius=1.5),
+        call(95.5, 48, 5, 5, style="D", round_corners=True, corner_radius=1.5),
+    ]
+    pdf.rect.assert_has_calls(rect_calls, any_order=True)
