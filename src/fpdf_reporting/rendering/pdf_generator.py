@@ -79,6 +79,9 @@ class PDF(FPDF):
         row_height = 6
         card_height = (len(items) * row_height) + 2 * padding
 
+        if start_y + card_height >= self.h - self.b_margin:
+            self.add_page()
+
         self.set_fill_color(*self.style.card_background)
         self.rect(
             start_x,
@@ -159,13 +162,13 @@ class PDF(FPDF):
         for t in tickets:
             self.ticket_card_long(t)
 
-    def ticket_card_long(
-        self, ticket: Ticket, x: Optional[float] = None, y: Optional[float] = None
-    ) -> None:
-        start_x = x or self.x
-        start_y = y or self.y
+    def ticket_card_long(self, ticket: Ticket) -> None:
         width = self.w - self.r_margin - self.l_margin
         height = 16
+        if self.y + height >= self.h - self.b_margin:
+            self.add_page()
+        start_x = self.x
+        start_y = self.y
         left_padding = 6
         block_width = 20
 
@@ -229,6 +232,10 @@ class PDF(FPDF):
     def ticket_card_short(self, ticket: Ticket) -> None:
         width = 77.5
         height = 30
+
+        if self.y + height >= self.h - self.b_margin:
+            self.add_page()
+
         start_x = self.x
         start_y = self.y
         label_width = 15
@@ -311,7 +318,7 @@ class PDF(FPDF):
         if start_x == self.l_margin:
             self.set_xy(start_x + width + _MEDIUM_SPACING, start_y)
         else:
-            self.set_y(self.y + height + _MEDIUM_SPACING)
+            self.set_y(start_y + height + _MEDIUM_SPACING)
 
     def _plot_bar_chart(self, values: list[float]) -> tuple[float, float]:
         spacing = 2
