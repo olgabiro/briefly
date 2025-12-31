@@ -221,46 +221,43 @@ class PDF(FPDF):
         height = 30
         self.__break_page_if_needed(height)
 
-        start_x = self.x
-        start_y = self.y
-        label_width = 15
-        summary_start = start_x + 24
-        row_height = 7
+        start_x, start_y = self.x, self.y
+        row_height = 3
 
         stripe_color: tuple[int, int, int] = self.style.category_colors.get(
             ticket.category, self.style.border_color
         )
         self.accent_card(stripe_color, width, height)
 
-        self.set_xy(start_x + _MEDIUM_SPACING, start_y + _SMALL_SPACING)
+        if ticket.flagged:
+            self.set_text_color(*self.style.disabled_color)
+
+        text_start_x = start_x + 8
         self.set_font(FONT_FAMILY, "B", LABEL_SIZE)
+        self.set_xy(text_start_x, start_y + 9)
         self.cell(
-            19, row_height, ticket.key, align="R", new_x=XPos.LEFT, new_y=YPos.NEXT
+            15, row_height, ticket.key, align="R", new_x=XPos.LEFT, new_y=YPos.NEXT
         )
-        self.set_font(FONT_FAMILY, "", LABEL_SIZE)
-        self.cell(
-            19,
-            row_height,
-            ticket.issue_type,
-            align="R",
-            new_x=XPos.LEFT,
-            new_y=YPos.NEXT,
+        _, y = self._two_line_label(
+            ticket.status, text_start_x, self.y + _SMALL_SPACING
         )
-        self.tag(ticket.status, ticket.status)
-        self.set_x(summary_start)
-        self.cell(label_width, row_height, ticket.priority or "N/A", new_x=XPos.RIGHT)
-        self.cell(
-            label_width,
-            row_height,
-            f"SP: {ticket.story_points or 'N/A'}",
-            new_x=XPos.RIGHT,
-        )
+        y = y + _SMALL_SPACING
+        x, _ = self._small_label(ticket.issue_type, text_start_x, y)
+        x, _ = self._small_label(ticket.priority or "N/A", x + _MEDIUM_SPACING, y)
+        story_points_text = f"SP: {ticket.story_points or 'N/A'}"
+        x, _ = self._small_label(story_points_text, x + _MEDIUM_SPACING, y)
 
         self.set_font(FONT_FAMILY, "", TEXT_SIZE)
-        self.set_xy(summary_start, start_y + _SMALL_SPACING)
-        self.multi_cell(
-            46, 14.5, ticket.summary, max_line_height=7, align="L", new_y=YPos.NEXT
-        )
+        self.set_xy(text_start_x + 20, start_y + 4)
+        summary_width = self.get_string_width(ticket.summary)
+        if summary_width <= 45:
+            self.cell(45, 4, ticket.summary, align="L")
+        elif summary_width >= 150:
+            self.multi_cell(
+                45, 15, f"{ticket.summary[:70]}...", max_line_height=4, align="L"
+            )
+        else:
+            self.multi_cell(45, 14, ticket.summary, max_line_height=4, align="L")
 
         if ticket.flagged:
             self.rect(
@@ -281,10 +278,23 @@ class PDF(FPDF):
                 style="F",
             )
 
+        self.set_text_color(*self.style.font_color)
         if start_x == self.l_margin:
             self.set_xy(start_x + width + _MEDIUM_SPACING, start_y)
         else:
             self.set_y(start_y + height + _MEDIUM_SPACING)
+
+    def _small_label(self, text: str, x: float, y: float) -> tuple[float, float]:
+        self.set_font(FONT_FAMILY, "", LABEL_SIZE)
+        self.set_xy(x, y)
+        self.cell(15, 3, text, align="R")
+        return x + 15, self.y + 3
+
+    def _two_line_label(self, text: str, x: float, y: float) -> tuple[float, float]:
+        self.set_font(FONT_FAMILY, "", LABEL_SIZE)
+        self.set_xy(x, y)
+        self.multi_cell(15, 5.8, text, align="R", max_line_height=3)
+        return x + 15, self.y
 
     def _plot_bar_chart(self, values: list[float]) -> tuple[float, float]:
         spacing = 2

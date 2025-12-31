@@ -29,6 +29,7 @@ class Style:
     card_details_color: Tuple[int, int, int]
     border_color: Tuple[int, int, int] = (230, 230, 230)
     header_color: Tuple[int, int, int] = (55, 53, 47)
+    disabled_color: Tuple[int, int, int]
 
 
 class NotionStyle(Style):
@@ -71,6 +72,7 @@ class NotionStyle(Style):
     font_color: Tuple[int, int, int] = (55, 53, 47)
     section_title_color: Tuple[int, int, int] = (55, 53, 47)
     card_details_color: Tuple[int, int, int] = (80, 79, 75)
+    disabled_color: Tuple[int, int, int] = (100, 101, 104)
 
 
 class LatteStyle(Style):
@@ -120,6 +122,7 @@ class LatteStyle(Style):
     card_details_color: Tuple[int, int, int] = (92, 95, 119)
     border_color: Tuple[int, int, int] = (156, 160, 176)
     header_color = (76, 79, 105)
+    disabled_color = (188, 192, 204)
 
 
 class MochaStyle(Style):
@@ -163,3 +166,4 @@ class MochaStyle(Style):
     card_details_color: Tuple[int, int, int] = (186, 194, 222)
     border_color: Tuple[int, int, int] = (49, 50, 68)
     header_color = (205, 214, 244)
+    disabled_color = (73, 77, 100)
