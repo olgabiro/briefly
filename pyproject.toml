@@ -34,14 +34,6 @@ line-length = 88
 target-version = "py314"
 src = ["src"]
 
-[tool.ruff.lint]
-select = ["E", "F", "B", "I"]
-ignore = ["E501"]
-
-[tool.ruff.lint.per-file-ignores]
-"__init__.py" = ["F401"]  # allow re-exports
-"tests/**" = ["S101"]  # allow asserts
-
 [tool.mypy]
 python_version = "3.14"
 strict = true
@@ -49,11 +41,11 @@ mypy_path = ["src"]
 explicit_package_bases = true
 exclude = "tests/"
 
-[tool.setuptools]
-package-dir = {"" = "src"}
-
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+"fpdf_reporting.fonts" = ["*.ttf"]
 
 [tool.pytest.ini_options]
 addopts = "--cov=fpdf_reporting --cov-report=term-missing"

@@ -1,25 +1,23 @@
-from pathlib import Path
+from importlib.resources import files
 from typing import Any, List, Optional, Tuple
 
 from fpdf import FPDF, XPos, YPos
 
 from fpdf_reporting.model.style import Style
 from fpdf_reporting.model.ticket import Status, Ticket
+from fpdf_reporting.rendering.font_spec import FONT_FAMILY, FONTS
 from fpdf_reporting.rendering.graphs import build_pie_chart_bytes
 
-FONT_FAMILY: str = "Inter"
 HEADER_SIZE: int = 20
 SECTION_TITLE_SIZE: int = 13
 TEXT_SIZE: int = 10
+ICON_FONT_SIZE: int = 9
 LABEL_SIZE: int = 7
 MARGIN_SIZE: int = 25
 
 _SMALL_SPACING: float = 2
 _MEDIUM_SPACING: float = 5
 _LARGE_SPACING: float = 10
-
-PROJECT_ROOT = Path(__file__).parents[3]
-OUTPUT_DIR = PROJECT_ROOT / "fonts"
 
 
 class PDF(FPDF):
@@ -29,9 +27,13 @@ class PDF(FPDF):
         super().__init__(**kwargs)
         self.style = style
         self.set_margin(MARGIN_SIZE)
-        self.add_font(FONT_FAMILY, "", OUTPUT_DIR / "Inter-Regular.ttf")
-        self.add_font(FONT_FAMILY, "B", OUTPUT_DIR / "Inter-Bold.ttf")
-        self.add_font(FONT_FAMILY, "I", OUTPUT_DIR / "Inter-Italic.ttf")
+        self.setup_fonts()
+
+    def setup_fonts(self) -> None:
+        font_pkg = files("fpdf_reporting.fonts")
+        for font in FONTS:
+            self.add_font(font.family, font.style, str(font_pkg / font.filename))
+        self.set_font(FONT_FAMILY, "", TEXT_SIZE)
 
     def footer(self) -> None:
         self.set_y(-15)
