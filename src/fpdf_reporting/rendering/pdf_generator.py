@@ -18,8 +18,7 @@ _SMALL_SPACING: float = 2
 _MEDIUM_SPACING: float = 5
 _LARGE_SPACING: float = 10
 
-
-PROJECT_ROOT = Path(__file__).parent.parent.parent.parent
+PROJECT_ROOT = Path(__file__).parents[3]
 OUTPUT_DIR = PROJECT_ROOT / "fonts"
 
 
@@ -41,7 +40,7 @@ class PDF(FPDF):
 
     def document_header(self, text: str) -> None:
         self.set_font(FONT_FAMILY, "B", size=HEADER_SIZE)
-        self.set_fill_color(*self.style.header_background)  # warm gray
+        self.set_fill_color(*self.style.header_background)
         self.set_text_color(*self.style.header_color)
         self.cell(
             0,
@@ -67,18 +66,16 @@ class PDF(FPDF):
         self.cell(0, 10, text, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
         self.set_xy(self.get_x(), self.get_y() + _LARGE_SPACING)
 
-    def summary_card(
-        self,
-        items: List[str],
-        width: int = 80,
-        x: Optional[float] = None,
-        y: Optional[float] = None,
-    ) -> tuple[float, float]:
-        start_x = x or self.x
-        start_y = y or self.y
+    def summary_card(self, items: List[str], width: int = 80) -> tuple[float, float]:
         padding = _MEDIUM_SPACING
         row_height = 6
         card_height = (len(items) * row_height) + 2 * padding
+        self.__break_page_if_needed(card_height)
+        start_x = self.x
+        start_y = self.y
+
+        if start_y + card_height >= self.h - self.b_margin:
+            self.add_page()
 
         self.set_fill_color(*self.style.card_background)
         self.rect(
@@ -134,25 +131,24 @@ class PDF(FPDF):
             self.ln()
         self.set_y(self.get_y() + _LARGE_SPACING)
 
-    def tag(self, text: str, status: Status) -> Tuple[float, float]:
+    def tag(self, text: str, status: Optional[Status] = None) -> Tuple[float, float]:
         bg = self.style.status_colors.get(
-            status, self.style.status_colors[Status.OTHER]
+            status or Status.OTHER, self.style.status_colors[Status.OTHER]
         )
         self.set_font(FONT_FAMILY, "", LABEL_SIZE)
         self.set_text_color(*self.style.font_color)
 
         text_w = self.get_string_width(text) + _SMALL_SPACING * 2
-        text_h = _SMALL_SPACING + LABEL_SIZE * 25.4 / 72.0
-        x, y = self.get_x(), self.get_y()
+        text_h = 5
+        x, y = self.x, self.y
 
         self.set_fill_color(*bg)
         self.rect(
             x, y, text_w, text_h, style="F", round_corners=True, corner_radius=1.5
         )
 
-        self.set_xy(x + _SMALL_SPACING - 1, y + 1)
-        self.cell(text_w, text_h - _SMALL_SPACING, text, border=0)
-        self.set_xy(x + text_w, y)  # end cell
+        self.cell(text_w, text_h, text, align="C")
+        self.set_x(x + text_w)
         return text_w, text_h
 
     def detailed_tickets_table(self, tickets: list[Ticket]) -> None:
@@ -161,66 +157,137 @@ class PDF(FPDF):
         for t in tickets:
             self.ticket_card_long(t)
 
-    def ticket_card_long(
-        self, ticket: Ticket, x: Optional[float] = None, y: Optional[float] = None
-    ) -> None:
-        start_x = x or self.x
-        start_y = y or self.y
+    def ticket_card_long(self, ticket: Ticket) -> None:
         width = self.w - self.r_margin - self.l_margin
-        height = 22
+        height = 16
+        self.__break_page_if_needed(height)
+        start_x = self.x
+        start_y = self.y
         left_padding = 6
-        top_padding = 2
+        block_width = 20
 
         stripe_color: tuple[int, int, int] = self.style.category_colors.get(
             ticket.category, self.style.border_color
         )
-        self.set_fill_color(*stripe_color)
-        self.rect(
-            start_x,
-            start_y,
-            2.5,
-            height,
-            style="F",
-            round_corners=True,
-            corner_radius=3,
-        )
-        self.set_draw_color(*self.style.border_color)
-        self.rect(
-            start_x, start_y, width, height, round_corners=True, corner_radius=1.5
-        )
+        self.accent_card(stripe_color, width, height)
 
-        self.set_xy(start_x + left_padding, start_y + top_padding)
-
-        key_width = 15
-        (_, line_height) = self.tag(ticket.status, ticket.status)
-        self.set_font(FONT_FAMILY, "B", TEXT_SIZE)
+        self.set_xy(start_x + left_padding, start_y + _SMALL_SPACING)
+        key_width = 12
+        self.tag(ticket.status)
+        self.set_font(FONT_FAMILY, "B", LABEL_SIZE)
         self.set_text_color(*self.style.font_color)
-        self.set_x(self.get_x() + left_padding)
-        self.cell(key_width, line_height, ticket.key)
+        self.set_x(start_x + left_padding + block_width)
+        self.cell(key_width, 5, ticket.key, align="R")
         self.set_font(FONT_FAMILY, "", TEXT_SIZE)
-        self.cell(width - key_width, line_height, ticket.summary, new_y=YPos.NEXT)
+        title_width = (
+            width - key_width - left_padding - _SMALL_SPACING - block_width - 5
+        )
+        self.cell(title_width, 5, ticket.summary, new_y=YPos.NEXT)
+        if ticket.flagged:
+            self._flagged_icon(self.x, start_y + _SMALL_SPACING)
 
-        self.set_xy(start_x + left_padding, start_y + line_height + 2 * top_padding)
-        self.tag(ticket.issue_type, Status.OTHER)
+        self.set_xy(start_x + left_padding, self.y + _SMALL_SPACING)
         if ticket.priority:
             dot_color: tuple[int, int, int] = self.style.priority_colors.get(
                 ticket.priority, (217, 241, 208)
             )
-            dot_x = self.get_x() + left_padding
-            dot_y = self.get_y() + (line_height - 3) / 2
-            self.set_fill_color(*dot_color)
-            self.ellipse(dot_x, dot_y, 3, 3, style="F")
-            self.set_x(dot_x + 3)
-            self.cell(10, line_height, ticket.priority)
+            self.legend_label(dot_color, ticket.priority)
 
-        self.set_xy(start_x + left_padding, self.get_y() + line_height + top_padding)
-
-        self.set_font(FONT_FAMILY, "", 9)
-        self.cell(
-            width - 12, 4, f"SP: {ticket.story_points}   Component: {ticket.component}"
-        )
-
+        self.set_x(start_x + left_padding + block_width)
+        self.tag(ticket.issue_type)
+        self.set_x(start_x + left_padding + block_width * 2)
+        self.tag(f"SP: {ticket.story_points or 'N/A'}")
+        self.set_x(start_x + left_padding + block_width * 3)
+        if ticket.component:
+            self.tag(ticket.component)
         self.set_y(start_y + height + _MEDIUM_SPACING)
+
+    def __break_page_if_needed(self, component_height: float) -> None:
+        if self.y + component_height >= self.h - self.b_margin:
+            self.add_page()
+
+    def ticket_card_short(self, ticket: Ticket) -> None:
+        width = 77.5
+        height = 30
+        self.__break_page_if_needed(height)
+
+        start_x, start_y = self.x, self.y
+        row_height = 3
+
+        stripe_color: tuple[int, int, int] = self.style.category_colors.get(
+            ticket.category, self.style.border_color
+        )
+        self.accent_card(stripe_color, width, height)
+
+        if ticket.flagged:
+            self.set_text_color(*self.style.disabled_color)
+
+        text_start_x = start_x + 8
+        self.set_font(FONT_FAMILY, "B", LABEL_SIZE)
+        self.set_xy(text_start_x, start_y + 9)
+        self.cell(
+            15, row_height, ticket.key, align="R", new_x=XPos.LEFT, new_y=YPos.NEXT
+        )
+        _, y = self._two_line_label(
+            ticket.status, text_start_x, self.y + _SMALL_SPACING
+        )
+        y = y + _SMALL_SPACING
+        x, _ = self._small_label(ticket.issue_type, text_start_x, y)
+        x, _ = self._small_label(ticket.priority or "N/A", x + _MEDIUM_SPACING, y)
+        story_points_text = f"SP: {ticket.story_points or 'N/A'}"
+        x, _ = self._small_label(story_points_text, x + _MEDIUM_SPACING, y)
+
+        if ticket.flagged:
+            self._flagged_icon(x + _MEDIUM_SPACING, y - 1)
+
+        self.set_font(FONT_FAMILY, "", TEXT_SIZE)
+        self.set_xy(text_start_x + 20, start_y + 4)
+        summary_width = self.get_string_width(ticket.summary)
+        if summary_width <= 45:
+            self.cell(45, 4, ticket.summary, align="L")
+        elif summary_width >= 150:
+            self.multi_cell(
+                45, 15, f"{ticket.summary[:70]}...", max_line_height=4, align="L"
+            )
+        else:
+            self.multi_cell(45, 14, ticket.summary, max_line_height=4, align="L")
+
+        self.set_text_color(*self.style.font_color)
+        if start_x == self.l_margin:
+            self.set_xy(start_x + width + _MEDIUM_SPACING, start_y)
+        else:
+            self.set_y(start_y + height + _MEDIUM_SPACING)
+
+    def _small_label(self, text: str, x: float, y: float) -> tuple[float, float]:
+        self.set_font(FONT_FAMILY, "", LABEL_SIZE)
+        self.set_xy(x, y)
+        self.cell(15, 3, text, align="R")
+        return x + 15, self.y + 3
+
+    def _two_line_label(self, text: str, x: float, y: float) -> tuple[float, float]:
+        self.set_font(FONT_FAMILY, "", LABEL_SIZE)
+        self.set_xy(x, y)
+        self.multi_cell(15, 5.8, text, align="R", max_line_height=3)
+        return x + 15, self.y
+
+    def _flagged_icon(self, x: float, y: float) -> None:
+        self.rect(
+            x,
+            y,
+            5,
+            5,
+            style="D",
+            round_corners=True,
+            corner_radius=1.5,
+        )
+        self.set_fill_color(*self.style.priority_colors["High"])
+        self.ellipse(
+            x + 1.5,
+            y + 1.5,
+            2,
+            2,
+            style="F",
+        )
 
     def _plot_bar_chart(self, values: list[float]) -> tuple[float, float]:
         spacing = 2
@@ -315,15 +382,48 @@ class PDF(FPDF):
         x: Optional[float] = None,
         y: Optional[float] = None,
     ) -> tuple[float, float]:
+        """
+        Generates a legend label with a colored dot. The label object has the height of 5mm.
+        :param color: the color of the dot
+        :param label: the text of the label
+        :param x: the x position of the label (optional)
+        :param y: the y position of the label (optional)
+        :return: the position of the bottom right corner of the label
+        """
         start_x = x or self.x
         start_y = y or self.y
 
         self.set_xy(start_x, start_y)
         self.set_fill_color(*color)
-        self.ellipse(start_x, start_y + 0.5, 2, 2, style="F")
-        self.set_x(start_x + 2)
+        self.ellipse(start_x + 1, start_y + 1.5, 2, 2, style="F")
+        self.set_x(start_x + 3)
         self.set_font(FONT_FAMILY, "", LABEL_SIZE)
         self.set_text_color(*self.style.font_color)
-        self.cell(15, 3, label)
+        self.cell(15, 5, label)
         self.set_font(FONT_FAMILY, "", TEXT_SIZE)
-        return start_x + 15, start_y + 4
+        return start_x + 18, start_y + 5
+
+    def accent_card(
+        self, accent_color: tuple[int, int, int], width: float, height: float
+    ) -> None:
+        self.set_draw_color(*self.style.border_color)
+        self.rect(
+            self.x,
+            self.y,
+            width,
+            height,
+            style="D",
+            round_corners=True,
+            corner_radius=2,
+        )
+
+        self.set_fill_color(*accent_color)
+        self.rect(
+            self.x,
+            self.y,
+            2,
+            height,
+            style="F",
+            round_corners=True,
+            corner_radius=2.2,
+        )

@@ -1,3 +1,6 @@
+import datetime
+import random
+
 import pytest
 
 from fpdf_reporting.model.style import MochaStyle
@@ -5,6 +8,35 @@ from fpdf_reporting.model.ticket import Category, Status, Ticket
 from fpdf_reporting.rendering.pdf_generator import PDF
 
 DARK_BACKGROUND = (38, 33, 43)
+
+
+def create_ticket():
+    status = random.choice(list(Status))
+    category = random.choices([random.choice(list(Category)), None], weights=[9, 1])[0]
+    issue_type = random.choice(["Bug", "Improvement", "Feature", "Prod Bug"])
+    due_day = random.randint(1, 31)
+    start_day = random.randint(1, due_day)
+    end_day = random.choices([random.randint(start_day, 31), None], weights=[2, 8])[0]
+    story_points = random.choice([1, 2, 3, 5, 8, 13, 21, None])
+    component = random.choice(
+        ["Strategical", "Platform", "Technical", "Client Request", None]
+    )
+    return Ticket(
+        key=f"PR-{random.randint(1000, 9999)}",
+        summary=f"Test ticket {random.randint(1, 100)}",
+        status=status,
+        issue_type=issue_type,
+        start_date=datetime.datetime(2025, 12, start_day),
+        end_date=datetime.datetime(2025, 12, end_day) if end_day else None,
+        due_date=datetime.date(2025, 12, due_day),
+        flagged=random.choice([True, False]),
+        priority=random.choice(["High", "Medium", "Low", None]),
+        story_points=story_points,
+        component=component,
+        developer="John Doe",
+        assignee="Alice Smith",
+        category=category,
+    )
 
 
 @pytest.mark.skip(reason="Manually run")
@@ -44,37 +76,10 @@ def test():
         col_widths=[20, 80, 30, 30],
     )
 
-    pdf.detailed_tickets_table(
-        tickets=[
-            Ticket(
-                key="PD-123",
-                summary="GIS CLM Update",
-                status=Status.IN_PROGRESS,
-                issue_type="Improvement",
-                priority="High",
-                story_points=8,
-                category=Category.COMMITTED,
-            ),
-            Ticket(
-                key="PD-2134",
-                summary="Postgres performance issues",
-                status=Status.ON_HOLD,
-                issue_type="Bug",
-                priority="Low",
-                story_points=13,
-                flagged=True,
-                category=Category.NICE_TO_HAVE,
-            ),
-            Ticket(
-                key="PD-34",
-                summary="Angular upgrade",
-                status=Status.READY_TO_MERGE,
-                issue_type="Improvement",
-                story_points=13,
-                category=Category.MAYBE,
-            ),
-        ]
-    )
+    pdf.detailed_tickets_table(tickets=[create_ticket() for _ in range(10)])
+
+    for _ in range(10):
+        pdf.ticket_card_short(create_ticket())
 
     pdf.add_page()
     data = {
