@@ -184,17 +184,7 @@ class PDF(FPDF):
         )
         self.cell(title_width, 5, ticket.summary, new_y=YPos.NEXT)
         if ticket.flagged:
-            self.rect(
-                self.x,
-                start_y + _SMALL_SPACING,
-                5,
-                5,
-                style="D",
-                round_corners=True,
-                corner_radius=1.5,
-            )
-            self.set_fill_color(*self.style.priority_colors["High"])
-            self.ellipse(self.x + 1.5, start_y + _SMALL_SPACING + 1.5, 2, 2, style="F")
+            self._flagged_icon(self.x, start_y + _SMALL_SPACING)
 
         self.set_xy(start_x + left_padding, self.y + _SMALL_SPACING)
         if ticket.priority:
@@ -247,6 +237,9 @@ class PDF(FPDF):
         story_points_text = f"SP: {ticket.story_points or 'N/A'}"
         x, _ = self._small_label(story_points_text, x + _MEDIUM_SPACING, y)
 
+        if ticket.flagged:
+            self._flagged_icon(x + _MEDIUM_SPACING, y - 1)
+
         self.set_font(FONT_FAMILY, "", TEXT_SIZE)
         self.set_xy(text_start_x + 20, start_y + 4)
         summary_width = self.get_string_width(ticket.summary)
@@ -258,25 +251,6 @@ class PDF(FPDF):
             )
         else:
             self.multi_cell(45, 14, ticket.summary, max_line_height=4, align="L")
-
-        if ticket.flagged:
-            self.rect(
-                start_x + width - _SMALL_SPACING - 5,
-                start_y + height - _SMALL_SPACING - 5,
-                5,
-                5,
-                style="D",
-                round_corners=True,
-                corner_radius=1.5,
-            )
-            self.set_fill_color(*self.style.priority_colors["High"])
-            self.ellipse(
-                start_x + width - _SMALL_SPACING - 3.5,
-                start_y + height - _SMALL_SPACING - 3.5,
-                2,
-                2,
-                style="F",
-            )
 
         self.set_text_color(*self.style.font_color)
         if start_x == self.l_margin:
@@ -295,6 +269,25 @@ class PDF(FPDF):
         self.set_xy(x, y)
         self.multi_cell(15, 5.8, text, align="R", max_line_height=3)
         return x + 15, self.y
+
+    def _flagged_icon(self, x: float, y: float) -> None:
+        self.rect(
+            x,
+            y,
+            5,
+            5,
+            style="D",
+            round_corners=True,
+            corner_radius=1.5,
+        )
+        self.set_fill_color(*self.style.priority_colors["High"])
+        self.ellipse(
+            x + 1.5,
+            y + 1.5,
+            2,
+            2,
+            style="F",
+        )
 
     def _plot_bar_chart(self, values: list[float]) -> tuple[float, float]:
         spacing = 2

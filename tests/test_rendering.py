@@ -2,7 +2,7 @@ import datetime
 from unittest.mock import ANY, MagicMock, call, patch
 
 import pytest
-from fpdf import XPos, YPos
+from fpdf import YPos
 
 from fpdf_reporting.model.style import NotionStyle
 from fpdf_reporting.model.ticket import Category, Status, Ticket
@@ -207,12 +207,12 @@ def test_ticket_card_short_with_all_properties(pdf: PDF):
     assert pdf.get_x() == 25 + 77.5 + 5
     assert pdf.get_y() == 25
 
-    cell_calls = [
-        call(19, 7, ticket.key, align="R", new_x=XPos.LEFT, new_y=YPos.NEXT),
-        call(19, 7, "Bug", align="R", new_x=XPos.LEFT, new_y=YPos.NEXT),
-        call(15, 7, "High", new_x=XPos.RIGHT),
-        call(15, 7, "SP: 8", new_x=XPos.RIGHT),
-    ]
+    # cell_calls = [
+    #     call(19, 7, ticket.key, align="R", new_x=XPos.LEFT, new_y=YPos.NEXT),
+    #     call(19, 7, "Bug", align="R", new_x=XPos.LEFT, new_y=YPos.NEXT),
+    #     call(15, 7, "High", new_x=XPos.RIGHT),
+    #     call(15, 7, "SP: 8", new_x=XPos.RIGHT),
+    # ]
     # TODO: update the test to reflect the implementation changes
     # pdf.cell.assert_has_calls(cell_calls, any_order=True)
     rect_calls = [
