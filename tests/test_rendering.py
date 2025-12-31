@@ -5,7 +5,7 @@ import pytest
 from fpdf import YPos
 
 from fpdf_reporting.model.style import NotionStyle
-from fpdf_reporting.model.ticket import Category, Status, Ticket
+from fpdf_reporting.model.ticket import Category, Status, Ticket, IssueType
 from fpdf_reporting.rendering.graphs import build_pie_chart_bytes
 from fpdf_reporting.rendering.pdf_generator import PDF
 
@@ -105,7 +105,11 @@ def test_ticket_card_long_mandatory_properties(tag_mock: MagicMock, pdf: PDF):
     assert pdf.get_x() == 25
     assert pdf.get_y() == 25 + 16 + 5
 
-    tag_calls = [call(ticket.issue_type), call(Status.IN_PROGRESS), call("SP: N/A")]
+    tag_calls = [
+        call(ticket.issue_type),
+        call(Status.IN_PROGRESS.value),
+        call("SP: N/A"),
+    ]
     tag_mock.assert_has_calls(tag_calls, any_order=True)
     cell_calls = [
         call(12, 5, ticket.key, align="R"),
@@ -125,7 +129,7 @@ def test_ticket_card_long_with_all_properties(tag_mock: MagicMock, pdf: PDF):
         key="PD-1234",
         summary="Test ticket",
         status=Status.IN_PROGRESS,
-        issue_type="Bug",
+        issue_type=IssueType.BUG,
         start_date=datetime.datetime(2023, 1, 1, 12, 13, 20),
         end_date=datetime.datetime(2023, 1, 2, 15, 10, 1),
         due_date=datetime.date(2023, 1, 3),
@@ -148,7 +152,7 @@ def test_ticket_card_long_with_all_properties(tag_mock: MagicMock, pdf: PDF):
 
     tag_calls = [
         call(ticket.component),
-        call(ticket.status),
+        call(ticket.status.value),
         call(ticket.issue_type),
         call("SP: 8"),
     ]
@@ -218,6 +222,6 @@ def test_ticket_card_short_with_all_properties(pdf: PDF):
     rect_calls = [
         call(25, 25, 77.5, 30, style="D", round_corners=True, corner_radius=2),
         call(25, 25, 2, 30, style="F", round_corners=True, corner_radius=2.2),
-        call(93, 42.8, 5, 5, style="D", round_corners=True, corner_radius=1.5),
+        call(95, 43.8, 5, 5, style="D", round_corners=True, corner_radius=1.5),
     ]
     pdf.rect.assert_has_calls(rect_calls, any_order=True)

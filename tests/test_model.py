@@ -1,7 +1,7 @@
 import pytest
 
 from fpdf_reporting.model.report_data import ReportData
-from fpdf_reporting.model.ticket import Status, Ticket
+from fpdf_reporting.model.ticket import Status, Ticket, IssueType
 
 
 @pytest.fixture
@@ -10,7 +10,7 @@ def ticket():
         key="PD-1234",
         summary="Test ticket",
         status=Status.IN_PROGRESS,
-        issue_type="Bug",
+        issue_type=IssueType.BUG,
     )
 
 

@@ -5,8 +5,9 @@ from fpdf import FPDF, XPos, YPos
 
 from fpdf_reporting.model.style import Style
 from fpdf_reporting.model.ticket import Status, Ticket
-from fpdf_reporting.rendering.font_spec import FONT_FAMILY, FONTS
+from fpdf_reporting.rendering.font_spec import FONT_FAMILY, FONTS, ICON_FONT_FAMILY
 from fpdf_reporting.rendering.graphs import build_pie_chart_bytes
+from fpdf_reporting.rendering.icons import DUE_DATE_ICON
 
 HEADER_SIZE: int = 20
 SECTION_TITLE_SIZE: int = 13
@@ -175,7 +176,7 @@ class PDF(FPDF):
 
         self.set_xy(start_x + left_padding, start_y + _SMALL_SPACING)
         key_width = 12
-        self.tag(ticket.status)
+        self.tag(ticket.status.value)
         self.set_font(FONT_FAMILY, "B", LABEL_SIZE)
         self.set_text_color(*self.style.font_color)
         self.set_x(start_x + left_padding + block_width)
@@ -224,17 +225,26 @@ class PDF(FPDF):
         if ticket.flagged:
             self.set_text_color(*self.style.disabled_color)
 
-        text_start_x = start_x + 8
+        text_start_x = start_x + 10
         self.set_font(FONT_FAMILY, "B", LABEL_SIZE)
-        self.set_xy(text_start_x, start_y + 9)
+        self.set_xy(text_start_x, start_y + 5)
         self.cell(
             15, row_height, ticket.key, align="R", new_x=XPos.LEFT, new_y=YPos.NEXT
         )
         _, y = self._two_line_label(
-            ticket.status, text_start_x, self.y + _SMALL_SPACING
+            ticket.status.value, text_start_x, self.y + _SMALL_SPACING
         )
         y = y + _SMALL_SPACING
-        x, _ = self._small_label(ticket.issue_type, text_start_x, y)
+        _, y = self._small_label(ticket.issue_type, text_start_x, y)
+        y = y + _SMALL_SPACING
+        self.set_xy(text_start_x - 4, y + 0.2)
+        self.set_font(ICON_FONT_FAMILY, "", 7)
+        self.cell(3, row_height, DUE_DATE_ICON, align="L")
+        x, _ = self._small_label(
+            ticket.due_date.strftime("%Y-%m-%d") if ticket.due_date else "",
+            text_start_x,
+            y,
+        )
         x, _ = self._small_label(ticket.priority or "N/A", x + _MEDIUM_SPACING, y)
         story_points_text = f"SP: {ticket.story_points or 'N/A'}"
         x, _ = self._small_label(story_points_text, x + _MEDIUM_SPACING, y)
@@ -243,7 +253,7 @@ class PDF(FPDF):
             self._flagged_icon(x + _MEDIUM_SPACING, y - 1)
 
         self.set_font(FONT_FAMILY, "", TEXT_SIZE)
-        self.set_xy(text_start_x + 20, start_y + 4)
+        self.set_xy(text_start_x + 15, start_y + 4)
         summary_width = self.get_string_width(ticket.summary)
         if summary_width <= 45:
             self.cell(45, 4, ticket.summary, align="L")
