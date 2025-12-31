@@ -2,7 +2,6 @@ import datetime
 from unittest.mock import ANY, MagicMock, call, patch
 
 import pytest
-from fpdf import YPos
 
 from fpdf_reporting.model.style import NotionStyle
 from fpdf_reporting.model.ticket import Category, Status, Ticket, IssueType
@@ -113,7 +112,7 @@ def test_ticket_card_long_mandatory_properties(tag_mock: MagicMock, pdf: PDF):
     tag_mock.assert_has_calls(tag_calls, any_order=True)
     cell_calls = [
         call(12, 5, ticket.key, align="R"),
-        call(ANY, 5, "Test ticket", new_y=YPos.NEXT),
+        call(ANY, 5, "Test ticket"),
     ]
     pdf.cell.assert_has_calls(cell_calls, any_order=True)
     rect_calls = [
@@ -160,13 +159,12 @@ def test_ticket_card_long_with_all_properties(tag_mock: MagicMock, pdf: PDF):
     cell_calls = [
         call(12, 5, ticket.key, align="R"),
         call(ANY, 5, "High"),
-        call(ANY, 5, "Test ticket", new_y=YPos.NEXT),
+        call(ANY, 5, "Test ticket"),
     ]
     pdf.cell.assert_has_calls(cell_calls, any_order=True)
     rect_calls = [
         call(25, 25, ANY, 16, style="D", round_corners=True, corner_radius=2),
         call(25, 25, 2, 16, style="F", round_corners=True, corner_radius=2.2),
-        call(ANY, 27, 5, 5, style="D", round_corners=True, corner_radius=1.5),
     ]
     pdf.rect.assert_has_calls(rect_calls, any_order=True)
 
@@ -222,6 +220,5 @@ def test_ticket_card_short_with_all_properties(pdf: PDF):
     rect_calls = [
         call(25, 25, 77.5, 30, style="D", round_corners=True, corner_radius=2),
         call(25, 25, 2, 30, style="F", round_corners=True, corner_radius=2.2),
-        call(95, 43.8, 5, 5, style="D", round_corners=True, corner_radius=1.5),
     ]
     pdf.rect.assert_has_calls(rect_calls, any_order=True)

@@ -7,12 +7,12 @@ from fpdf_reporting.model.style import Style
 from fpdf_reporting.model.ticket import Status, Ticket
 from fpdf_reporting.rendering.font_spec import FONT_FAMILY, FONTS, ICON_FONT_FAMILY
 from fpdf_reporting.rendering.graphs import build_pie_chart_bytes
-from fpdf_reporting.rendering.icons import DUE_DATE_ICON
+from fpdf_reporting.rendering.icons import DUE_DATE_ICON, FLAG_ICON
 
 HEADER_SIZE: int = 20
 SECTION_TITLE_SIZE: int = 13
 TEXT_SIZE: int = 10
-ICON_FONT_SIZE: int = 9
+ICON_FONT_SIZE: int = 7
 LABEL_SIZE: int = 7
 MARGIN_SIZE: int = 25
 
@@ -185,11 +185,11 @@ class PDF(FPDF):
         title_width = (
             width - key_width - left_padding - _SMALL_SPACING - block_width - 5
         )
-        self.cell(title_width, 5, ticket.summary, new_y=YPos.NEXT)
+        self.cell(title_width, 5, ticket.summary)
         if ticket.flagged:
-            self._flagged_icon(self.x, start_y + _SMALL_SPACING)
+            self._flagged_icon(self.x + 2, self.y)
 
-        self.set_xy(start_x + left_padding, self.y + _SMALL_SPACING)
+        self.set_xy(start_x + left_padding, self.y + 5 + _SMALL_SPACING)
         if ticket.priority:
             dot_color: tuple[int, int, int] = self.style.priority_colors.get(
                 ticket.priority, (217, 241, 208)
@@ -250,7 +250,7 @@ class PDF(FPDF):
         x, _ = self._small_label(story_points_text, x + _MEDIUM_SPACING, y)
 
         if ticket.flagged:
-            self._flagged_icon(x + _MEDIUM_SPACING, y - 1)
+            self._flagged_icon(x + _MEDIUM_SPACING, y)
 
         self.set_font(FONT_FAMILY, "", TEXT_SIZE)
         self.set_xy(text_start_x + 15, start_y + 4)
@@ -283,23 +283,12 @@ class PDF(FPDF):
         return x + 15, self.y
 
     def _flagged_icon(self, x: float, y: float) -> None:
-        self.rect(
-            x,
-            y,
-            5,
-            5,
-            style="D",
-            round_corners=True,
-            corner_radius=1.5,
-        )
-        self.set_fill_color(*self.style.priority_colors["High"])
-        self.ellipse(
-            x + 1.5,
-            y + 1.5,
-            2,
-            2,
-            style="F",
-        )
+        self.set_font(ICON_FONT_FAMILY, "", ICON_FONT_SIZE)
+        self.set_text_color(*self.style.priority_colors["Medium"])
+        self.set_xy(x, y + 0.3)
+        self.cell(3, 3, FLAG_ICON, align="C")
+        self.set_xy(self.x, y - 0.3)
+        self.set_text_color(*self.style.disabled_color)
 
     def _plot_bar_chart(self, values: list[float]) -> tuple[float, float]:
         spacing = 2
