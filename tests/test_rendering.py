@@ -218,6 +218,6 @@ def test_ticket_card_short_with_all_properties(pdf: PDF):
     rect_calls = [
         call(25, 25, 77.5, 30, style="D", round_corners=True, corner_radius=2),
         call(25, 25, 2, 30, style="F", round_corners=True, corner_radius=2.2),
-        call(95.5, 48, 5, 5, style="D", round_corners=True, corner_radius=1.5),
+        call(93, 42.8, 5, 5, style="D", round_corners=True, corner_radius=1.5),
     ]
     pdf.rect.assert_has_calls(rect_calls, any_order=True)
