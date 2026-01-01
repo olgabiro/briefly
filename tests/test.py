@@ -81,7 +81,6 @@ def test():
     for _ in range(10):
         pdf.ticket_card_short(create_ticket())
 
-    pdf.add_page()
     data = {
         "cat1": 10,
         "cat3": 8,
@@ -93,12 +92,20 @@ def test():
         "cat8": 10,
     }
 
-    (x, y) = pdf.bar_chart(data, caption="Categories")
+    pdf.bar_chart(data, caption="Categories", height=30)
 
-    pdf.set_x(x + 10)
     pdf.pie_chart(
         data,
         width=30,
         caption="Categories",
     )
+
+    pdf.pie_chart(
+        data,
+        width=30,
+        caption="Categories",
+    )
+
+    pdf.bar_chart(data, caption="Categories", height=30)
+    pdf.bar_chart(data, caption="Categories", height=30)
     pdf.output("./output/test.pdf")

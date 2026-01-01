@@ -72,7 +72,8 @@ class NotionStyle(Style):
     font_color: Tuple[int, int, int] = (55, 53, 47)
     section_title_color: Tuple[int, int, int] = (55, 53, 47)
     card_details_color: Tuple[int, int, int] = (80, 79, 75)
-    disabled_color: Tuple[int, int, int] = (100, 101, 104)
+    disabled_color: Tuple[int, int, int] = (165, 159, 141)
+    background_color: Tuple[int, int, int] = (255, 255, 255)
 
 
 class LatteStyle(Style):

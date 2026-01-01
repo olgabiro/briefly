@@ -290,12 +290,13 @@ class PDF(FPDF):
         self.set_xy(self.x, y - 0.3)
         self.set_text_color(*self.style.disabled_color)
 
-    def _plot_bar_chart(self, values: list[float]) -> tuple[float, float]:
+    def _plot_bar_chart(
+        self, values: list[float], height: float
+    ) -> tuple[float, float]:
         spacing = 2
         bar_width = 3
         x = self.x
         start_y = self.y
-        height = 30
         width = x + len(values) * (bar_width + spacing) + spacing
         max_value = max(values) if values else 0
 
@@ -328,53 +329,67 @@ class PDF(FPDF):
         return x - spacing, start_y + height
 
     def bar_chart(
-        self, data: dict[str, float], caption: Optional[str] = None
+        self, data: dict[str, float], caption: str, height: float
     ) -> tuple[float, float]:
-        x = self.x
-        y = self.y
-        self._plot_bar_chart(list(data.values()))
-        self.legend(list(data.keys()), x + 30, y + _SMALL_SPACING, caption=caption)
-        self.set_xy(self.x + 15, y)
-        return self.x, y + 30
+        start_x, start_y = self.x, self.y
+        x, _ = self._plot_bar_chart(list(data.values()), height)
+        self.legend(
+            list(data.keys()), x + _SMALL_SPACING, start_y + _SMALL_SPACING, caption
+        )
+        end_x = self.x
+        if start_x == self.l_margin:
+            self.set_xy(self.x + _LARGE_SPACING, start_y)
+        else:
+            self.set_xy(self.l_margin, start_y + height + _LARGE_SPACING)
+        return end_x, start_y + height
 
     def pie_chart(
         self,
         data: dict[str, float],
+        caption: str,
         width: float = 70,
-        caption: Optional[str] = None,
-    ) -> None:
+    ) -> tuple[float, float]:
         """Generate a pie chart in-memory and insert it into the PDF."""
         img_buf = build_pie_chart_bytes(
             list(data.values()), colors=self.style.chart_colors
         )
 
         if img_buf is None:
-            return
+            return self.x, self.y
 
-        x = self.get_x()
-        y = self.get_y()
-
+        x, y = self.x, self.y
         self.image(img_buf, x=x, y=y, w=width)
         self.set_xy(x + width, y)
 
         legend_x = x + width + _MEDIUM_SPACING
         legend_y = y + _SMALL_SPACING
-        self.legend(list(data.keys()), legend_x, legend_y, caption=caption)
+        end_x, end_y = self.legend(list(data.keys()), legend_x, legend_y, caption)
+        if x == self.l_margin:
+            self.set_xy(end_x + _LARGE_SPACING, y)
+        else:
+            self.set_xy(self.l_margin, end_y + _LARGE_SPACING)
+        return end_x, end_y
 
     def legend(
-        self, labels: list[str], x: float, y: float, caption: Optional[str] = None
-    ) -> None:
-        if caption:
-            self.set_xy(x - 1, y)
-            self.set_font(FONT_FAMILY, "", 9)
-            self.cell(0, 5, caption, align="L")
-            y += 5 + _SMALL_SPACING
-
+        self, labels: list[str], x: float, y: float, caption: str
+    ) -> tuple[float, float]:
+        self.set_xy(x, y)
         self.set_font(FONT_FAMILY, "", 9)
+        self.cell(0, 5, caption, align="L", new_y=YPos.NEXT)
+        legend_start_y = self.y + _SMALL_SPACING
+        next_column_x = x + _SMALL_SPACING
+
         legend_colors = self.style.chart_colors
         for idx, label in enumerate(labels):
+            if idx % 4 == 0:
+                x, y = next_column_x, legend_start_y
             color = legend_colors[idx % len(legend_colors)]
-            (_, y) = self.legend_label(color, label, x, y)
+            _, y = self.legend_label(color, label, x, y)
+            next_column_x = max(
+                next_column_x, x + int(self.get_string_width(label)) + _MEDIUM_SPACING
+            )
+
+        return next_column_x, y
 
     def legend_label(
         self,

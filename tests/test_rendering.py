@@ -20,11 +20,9 @@ def pdf() -> PDF:
 def data() -> dict[str, float]:
     return {
         "one": 12,
-        "two": 15,
-        "zero": 0,
+        "two": 0,
         "three": 30,
         "four": 55,
-        "five": 100,
     }
 
 
@@ -170,11 +168,11 @@ def test_ticket_card_long_with_all_properties(tag_mock: MagicMock, pdf: PDF):
 
 
 def test_pie_chart(pdf: PDF, data: dict[str, float]):
-    pdf.pie_chart(data)
+    x, y = pdf.pie_chart(data, "Test Pie Chart")
     assert pdf.font_family == "inter"
     assert pdf.font_size_pt == 10
-    assert pdf.get_x() == 118
-    assert pdf.get_y() == 52
+    assert x == 115
+    assert y == 54
 
 
 @patch.object(PDF, "ticket_card_long")
