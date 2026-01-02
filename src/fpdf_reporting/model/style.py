@@ -16,6 +16,7 @@ MINIMALIST_ROW_ALT = (247, 249, 252)
 
 
 class Style:
+    background_color: Tuple[int, int, int]
     category_colors: dict[Optional[Category], Tuple[int, int, int]]
     status_colors: dict[Status, Tuple[int, int, int]]
     chart_colors: list[Tuple[int, int, int]]

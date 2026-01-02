@@ -43,7 +43,6 @@ def create_ticket():
 def test():
     style = MochaStyle()
     pdf = PDF(style)
-    pdf.set_page_background(style.background_color)
     pdf.add_page()
 
     pdf.document_header("JIRA Summary Test")

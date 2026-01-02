@@ -28,6 +28,7 @@ class PDF(FPDF):
         super().__init__(**kwargs)
         self.style = style
         self.set_margin(MARGIN_SIZE)
+        self.set_page_background(style.background_color)
         self.setup_fonts()
 
     def setup_fonts(self) -> None:
@@ -237,11 +238,11 @@ class PDF(FPDF):
         y = y + _SMALL_SPACING
         _, y = self._small_label(ticket.issue_type, text_start_x, y)
         y = y + _SMALL_SPACING
-        self.set_xy(text_start_x - 4, y + 0.2)
+        self.set_xy(text_start_x - 3, y + 0.2)
         self.set_font(ICON_FONT_FAMILY, "", 7)
         self.cell(3, row_height, DUE_DATE_ICON, align="L")
         x, _ = self._small_label(
-            ticket.due_date.strftime("%Y-%m-%d") if ticket.due_date else "",
+            ticket.due_date.strftime("%d.%m.%Y") if ticket.due_date else "",
             text_start_x,
             y,
         )
@@ -367,7 +368,7 @@ class PDF(FPDF):
         if x == self.l_margin:
             self.set_xy(end_x + _LARGE_SPACING, y)
         else:
-            self.set_xy(self.l_margin, end_y + _LARGE_SPACING)
+            self.set_xy(self.l_margin, y + width + _LARGE_SPACING)
         return end_x, end_y
 
     def legend(
