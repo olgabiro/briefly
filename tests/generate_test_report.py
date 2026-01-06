@@ -11,7 +11,7 @@ REPORT_PATH = TEST_DIRECTORY / "output/sample_report.pdf"
 TEST_TICKETS = [
     Ticket(
         "PD-1234",
-        "Prio 1 ticket",
+        "Prio 1 ticket that has a pretty long description - very urgent",
         Status.IN_PROGRESS,
         IssueType.PROD_BUG,
         priority="High",
@@ -97,18 +97,30 @@ REPORT_STATISTICS = [
     }
 ]
 
+
 def generate_report(report_path: Path) -> None:
     pdf = PDF(MochaStyle())
     pdf.add_page()
     pdf.document_header("Sample Report")
     pdf.section_title("Introduction")
-    _, y = pdf.summary_card(
+    x, y = pdf.summary_card(
         [
             "This is a sample report generated using FPDF.",
             "It demonstrates basic PDF generation.",
         ],
-        width=100,
+        width=85,
     )
+
+    pdf.set_x(x + 10)
+
+    pdf.bar_chart({
+        Status.READY_FOR_DEV.value: 15,
+        Status.ON_HOLD.value: 2,
+        Status.IN_PROGRESS.value: 7,
+        Status.READY_FOR_QA.value: 8,
+    },
+        "Story points by status",
+        30)
 
     pdf.set_y(y + 10)
     pdf.section_title("Tickets")
@@ -122,7 +134,6 @@ def generate_report(report_path: Path) -> None:
     pdf.pie_chart(REPORT_STATISTICS[1], "Story points by status", 30)
     pdf.bar_chart(REPORT_STATISTICS[2], "Story points by component", height=30)
     pdf.pie_chart(REPORT_STATISTICS[3], "Story points by priority", 30)
-
 
     pdf.output(str(report_path))
 
