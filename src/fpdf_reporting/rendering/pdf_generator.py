@@ -109,10 +109,10 @@ class PDF(FPDF):
         return start_x + width, start_y + card_height
 
     def styled_table(
-        self,
-        headers: list[str],
-        rows: list[tuple[str, str, str, str]],
-        col_widths: list[int],
+            self,
+            headers: list[str],
+            rows: list[tuple[str, str, str, str]],
+            col_widths: list[int],
     ) -> None:
         self.set_font(FONT_FAMILY, "B", TEXT_SIZE)
         self.set_fill_color(*self.style.table_header_color)
@@ -127,12 +127,13 @@ class PDF(FPDF):
 
         for idx, row in enumerate(rows):
             self.set_fill_color(*self.style.table_row_colors[idx % 2])
-            self.set_text_color(*self.style.font_color)
 
             for i, cell in enumerate(row):
                 self.cell(col_widths[i], LABEL_SIZE, cell, border="B", fill=True)
-
+            self.set_fill_color(*self.style.card_background)
             self.ln()
+
+        self.set_fill_color(*self.style.card_background)
         self.set_y(self.get_y() + _LARGE_SPACING)
 
     def tag(self, text: str, status: Optional[Status] = None) -> Tuple[float, float]:
@@ -184,7 +185,7 @@ class PDF(FPDF):
         self.cell(key_width, 5, ticket.key, align="R")
         self.set_font(FONT_FAMILY, "", TEXT_SIZE)
         title_width = (
-            width - key_width - left_padding - _SMALL_SPACING - block_width - 5
+                width - key_width - left_padding - _SMALL_SPACING - block_width - 5
         )
         self.cell(title_width, 5, ticket.summary)
         if ticket.flagged:
@@ -216,7 +217,7 @@ class PDF(FPDF):
         self.__break_page_if_needed(height)
 
         start_x, start_y = self.x, self.y
-        row_height = 3
+        row_height = 5
 
         stripe_color: tuple[int, int, int] = self.style.category_colors.get(
             ticket.category, self.style.border_color
@@ -226,18 +227,14 @@ class PDF(FPDF):
         if ticket.flagged:
             self.set_text_color(*self.style.disabled_color)
 
-        text_start_x = start_x + 10
+        text_start_x = start_x + 12.5
         self.set_font(FONT_FAMILY, "B", LABEL_SIZE)
-        self.set_xy(text_start_x, start_y + 5)
+        self.set_xy(text_start_x, start_y + 9)
         self.cell(
             15, row_height, ticket.key, align="R", new_x=XPos.LEFT, new_y=YPos.NEXT
         )
-        _, y = self._two_line_label(
-            ticket.status.value, text_start_x, self.y + _SMALL_SPACING
-        )
-        y = y + _SMALL_SPACING
-        _, y = self._small_label(ticket.issue_type, text_start_x, y)
-        y = y + _SMALL_SPACING
+        _, y = self._two_line_label(ticket.status.value, text_start_x, self.y + 1)
+        y = y + 1
         self.set_xy(text_start_x - 3, y + 0.2)
         self.set_font(ICON_FONT_FAMILY, "", 7)
         self.cell(3, row_height, DUE_DATE_ICON, align="L")
@@ -246,12 +243,12 @@ class PDF(FPDF):
             text_start_x,
             y,
         )
-        x, _ = self._small_label(ticket.priority or "N/A", x + _MEDIUM_SPACING, y)
-        story_points_text = f"SP: {ticket.story_points or 'N/A'}"
-        x, _ = self._small_label(story_points_text, x + _MEDIUM_SPACING, y)
 
+        x, _ = self._small_label(ticket.priority or "N/A", x, y)
+        story_points_text = f"SP: {ticket.story_points or 'N/A'}"
+        x, _ = self._small_label(story_points_text, x + 6, y)
         if ticket.flagged:
-            self._flagged_icon(x + _MEDIUM_SPACING, y)
+            self._flagged_icon(x + 8, y)
 
         self.set_font(FONT_FAMILY, "", TEXT_SIZE)
         self.set_xy(text_start_x + 15, start_y + 4)
@@ -274,25 +271,26 @@ class PDF(FPDF):
     def _small_label(self, text: str, x: float, y: float) -> tuple[float, float]:
         self.set_font(FONT_FAMILY, "", LABEL_SIZE)
         self.set_xy(x, y)
-        self.cell(15, 3, text, align="R")
+        self.cell(15, 5, text, align="R")
         return x + 15, self.y + 3
 
     def _two_line_label(self, text: str, x: float, y: float) -> tuple[float, float]:
         self.set_font(FONT_FAMILY, "", LABEL_SIZE)
         self.set_xy(x, y)
-        self.multi_cell(15, 5.8, text, align="R", max_line_height=3)
+        self.multi_cell(15, 6, text, align="R", max_line_height=3)
+
         return x + 15, self.y
 
     def _flagged_icon(self, x: float, y: float) -> None:
         self.set_font(ICON_FONT_FAMILY, "", ICON_FONT_SIZE)
         self.set_text_color(*self.style.priority_colors["Medium"])
         self.set_xy(x, y + 0.3)
-        self.cell(3, 3, FLAG_ICON, align="C")
+        self.cell(3, 5, FLAG_ICON, align="R")
         self.set_xy(self.x, y - 0.3)
         self.set_text_color(*self.style.disabled_color)
 
     def _plot_bar_chart(
-        self, values: list[float], height: float
+            self, values: list[float], height: float
     ) -> tuple[float, float]:
         spacing = 2
         bar_width = 3
@@ -301,6 +299,7 @@ class PDF(FPDF):
         width = x + len(values) * (bar_width + spacing) + spacing
         max_value = max(values) if values else 0
 
+        self.set_draw_color(*self.style.border_color)
         self.line(x, start_y, width, start_y)
         self.line(x, start_y + 5, width, start_y + 5)
         self.line(x, start_y + 10, width, start_y + 10)
@@ -311,46 +310,57 @@ class PDF(FPDF):
         x += spacing
 
         for index, value in enumerate(values):
-            self.set_fill_color(
-                *self.style.chart_colors[index % len(self.style.chart_colors)]
-            )
-            bar_height = height * value / max_value
-            y = start_y + height - bar_height
-            self.rect(
-                x,
-                y,
-                bar_width,
-                bar_height,
-                style="F",
-                round_corners=True,
-                corner_radius=1.5,
-            )
+            if value > 0:
+                self.set_fill_color(
+                    *self.style.chart_colors[index % len(self.style.chart_colors)]
+                )
+                bar_height = height * value / max_value
+                y = start_y + height - bar_height
+                if bar_height > 1.5:
+                    self.rect(
+                        x,
+                        y,
+                        bar_width,
+                        bar_height,
+                        style="F",
+                        round_corners=True,
+                        corner_radius=1.5,
+                    )
             x += bar_width + spacing
 
         return x - spacing, start_y + height
 
     def bar_chart(
-        self, data: dict[str, float], caption: str, height: float
+            self, data: dict[str, float], caption: str, height: float
     ) -> tuple[float, float]:
+        self.__break_page_if_needed(height)
         start_x, start_y = self.x, self.y
-        x, _ = self._plot_bar_chart(list(data.values()), height)
-        self.legend(
-            list(data.keys()), x + _SMALL_SPACING, start_y + _SMALL_SPACING, caption
+        x, y = self._plot_bar_chart(list(data.values()), height)
+        if len(data.keys()) > 12:
+            x, y = start_x, y + _SMALL_SPACING
+        else:
+            x, y = x + _SMALL_SPACING, start_y + _SMALL_SPACING
+
+        legend_labels = [f"{key} ({data[key]:.2f})" for key in data.keys()]
+        x, y = self.legend(
+            legend_labels, x, y, caption
         )
         end_x = self.x
         if start_x == self.l_margin:
             self.set_xy(self.x + _LARGE_SPACING, start_y)
         else:
-            self.set_xy(self.l_margin, start_y + height + _LARGE_SPACING)
-        return end_x, start_y + height
+            self.set_xy(self.l_margin, y + _LARGE_SPACING)
+        return end_x, y
 
     def pie_chart(
-        self,
-        data: dict[str, float],
-        caption: str,
-        width: float = 70,
+            self,
+            data: dict[str, float],
+            caption: str,
+            width: float = 70,
     ) -> tuple[float, float]:
         """Generate a pie chart in-memory and insert it into the PDF."""
+        self.__break_page_if_needed(width)
+
         img_buf = build_pie_chart_bytes(
             list(data.values()), colors=self.style.chart_colors
         )
@@ -358,13 +368,18 @@ class PDF(FPDF):
         if img_buf is None:
             return self.x, self.y
 
+        start_x = self.x
         x, y = self.x, self.y
         self.image(img_buf, x=x, y=y, w=width)
         self.set_xy(x + width, y)
 
-        legend_x = x + width + _MEDIUM_SPACING
-        legend_y = y + _SMALL_SPACING
-        end_x, end_y = self.legend(list(data.keys()), legend_x, legend_y, caption)
+        if len(data.keys()) > 12:
+            legend_x, legend_y = start_x, y + width + _SMALL_SPACING
+        else:
+            legend_x = x + width + _MEDIUM_SPACING
+            legend_y = y + _SMALL_SPACING
+        legend_labels = [f"{key} ({data[key]})" for key in data.keys()]
+        end_x, end_y = self.legend(legend_labels, legend_x, legend_y, caption)
         if x == self.l_margin:
             self.set_xy(end_x + _LARGE_SPACING, y)
         else:
@@ -372,32 +387,37 @@ class PDF(FPDF):
         return end_x, end_y
 
     def legend(
-        self, labels: list[str], x: float, y: float, caption: str
+            self, labels: list[str], x: float, y: float, caption: str
     ) -> tuple[float, float]:
         self.set_xy(x, y)
         self.set_font(FONT_FAMILY, "", 9)
         self.cell(0, 5, caption, align="L", new_y=YPos.NEXT)
         legend_start_y = self.y + _SMALL_SPACING
         next_column_x = x + _SMALL_SPACING
+        max_y = y
 
         legend_colors = self.style.chart_colors
         for idx, label in enumerate(labels):
             if idx % 4 == 0:
                 x, y = next_column_x, legend_start_y
             color = legend_colors[idx % len(legend_colors)]
+            self.set_font(FONT_FAMILY, "", LABEL_SIZE)
+            label_width = self.get_string_width(label)
             _, y = self.legend_label(color, label, x, y)
             next_column_x = max(
-                next_column_x, x + int(self.get_string_width(label)) + _MEDIUM_SPACING
+                next_column_x, x + int(label_width) + _LARGE_SPACING
             )
 
-        return next_column_x, y
+            max_y = max(max_y, y)
+
+        return next_column_x, max_y
 
     def legend_label(
-        self,
-        color: tuple[int, int, int],
-        label: str,
-        x: Optional[float] = None,
-        y: Optional[float] = None,
+            self,
+            color: tuple[int, int, int],
+            label: str,
+            x: Optional[float] = None,
+            y: Optional[float] = None,
     ) -> tuple[float, float]:
         """
         Generates a legend label with a colored dot. The label object has the height of 5mm.
@@ -421,7 +441,7 @@ class PDF(FPDF):
         return start_x + 18, start_y + 5
 
     def accent_card(
-        self, accent_color: tuple[int, int, int], width: float, height: float
+            self, accent_color: tuple[int, int, int], width: float, height: float
     ) -> None:
         self.set_draw_color(*self.style.border_color)
         self.rect(
@@ -444,3 +464,59 @@ class PDF(FPDF):
             round_corners=True,
             corner_radius=2.2,
         )
+
+    def bar_chart_with_limit(self, data: dict[str, float], limit: float, caption: str, height: float) -> tuple[float, float]:
+        self.__break_page_if_needed(height)
+        start_x, start_y = self.x, self.y
+        x, y = self._plot_bar_chart_with_limit(list(data.values()), height, limit)
+        if len(data.keys()) > 12:
+            x, y = start_x, y + _SMALL_SPACING
+        else:
+            x, y = x + _SMALL_SPACING, start_y + _SMALL_SPACING
+
+        legend_labels = [f"{key} ({data[key]:.2f})" for key in data.keys()]
+        x, y = self.legend(
+            legend_labels, x, y, caption
+        )
+        end_x = self.x
+        if start_x == self.l_margin:
+            self.set_xy(self.x + _LARGE_SPACING, start_y)
+        else:
+            self.set_xy(self.l_margin, y + _LARGE_SPACING)
+        return end_x, y
+
+    def _plot_bar_chart_with_limit(
+            self, values: list[float], height: float, limit: float
+    ) -> tuple[float, float]:
+        spacing = 2
+        bar_width = 3
+        start_x = self.x
+        start_y = self.y
+        max_value = max(max(values), limit) if values else 0
+        x = start_x + spacing
+
+        for index, value in enumerate(values):
+            if value > 0:
+                self.set_fill_color(
+                    *self.style.chart_colors[index % len(self.style.chart_colors)]
+                )
+                bar_height = height * value / max_value
+                y = start_y + height - bar_height
+                if bar_height > 1.5:
+                    self.rect(
+                        x,
+                        y,
+                        bar_width,
+                        bar_height,
+                        style="F",
+                        round_corners=True,
+                        corner_radius=1.5,
+                    )
+            x += bar_width + spacing
+
+        limit_line_y = start_y + height - height * limit / max_value
+        self.set_draw_color(*self.style.priority_colors["High"])
+        self.set_line_width(0.4)
+        self.line(start_x, limit_line_y, x - spacing, limit_line_y)
+        self.set_line_width(0.2)
+        return x - spacing, start_y + height
