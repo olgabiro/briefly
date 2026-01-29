@@ -45,7 +45,7 @@ def test_header(pdf: PDF):
 def test_section_title(pdf: PDF):
     pdf.section_title("Test section")
     assert pdf.font_family == "inter"
-    assert pdf.font_size_pt == 13
+    assert pdf.font_size_pt == 10
     assert pdf.get_y() == 45
     assert pdf.get_x() == 25
 
