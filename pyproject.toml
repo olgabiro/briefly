@@ -5,14 +5,21 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "briefly"
 version = "0.1.1"
-readme = "README.md"
 description = "A modern way to build beautiful PDF reports."
+readme = "README.md"
 requires-python = ">=3.14"
-
+license = { text = "MIT" }
+authors = [
+    { name = "Olga Biro" }
+]
 dependencies = [
     "fpdf2>=2.8.5",
     "matplotlib>=3.10.8"
 ]
+
+[project.urls]
+Homepage = "https://github.com/olgabiro/briefly"
+Issues = "https://github.com/olgabiro/briefly/issues"
 
 [project.optional-dependencies]
 dev = [
