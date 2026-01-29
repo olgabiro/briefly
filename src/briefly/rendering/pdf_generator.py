@@ -3,11 +3,11 @@ from typing import Any, List, Optional, Tuple
 
 from fpdf import FPDF, XPos, YPos
 
-from fpdf_reporting.model.style import Style
-from fpdf_reporting.model.ticket import Status, Ticket
-from fpdf_reporting.rendering.font_spec import FONT_FAMILY, FONTS, ICON_FONT_FAMILY
-from fpdf_reporting.rendering.graphs import build_pie_chart_bytes
-from fpdf_reporting.rendering.icons import DUE_DATE_ICON, FLAG_ICON
+from briefly.model.style import Style
+from briefly.model.ticket import Status, Ticket
+from briefly.rendering.font_spec import FONT_FAMILY, FONTS, ICON_FONT_FAMILY
+from briefly.rendering.graphs import build_pie_chart_bytes
+from briefly.rendering.icons import DUE_DATE_ICON, FLAG_ICON
 
 HEADER_SIZE: int = 20
 SECTION_TITLE_SIZE: int = 13
@@ -109,10 +109,10 @@ class PDF(FPDF):
         return start_x + width, start_y + card_height
 
     def styled_table(
-            self,
-            headers: list[str],
-            rows: list[tuple[str, str, str, str]],
-            col_widths: list[int],
+        self,
+        headers: list[str],
+        rows: list[tuple[str, str, str, str]],
+        col_widths: list[int],
     ) -> None:
         self.set_font(FONT_FAMILY, "B", TEXT_SIZE)
         self.set_fill_color(*self.style.table_header_color)
@@ -185,7 +185,7 @@ class PDF(FPDF):
         self.cell(key_width, 5, ticket.key, align="R")
         self.set_font(FONT_FAMILY, "", TEXT_SIZE)
         title_width = (
-                width - key_width - left_padding - _SMALL_SPACING - block_width - 5
+            width - key_width - left_padding - _SMALL_SPACING - block_width - 5
         )
         self.cell(title_width, 5, ticket.summary)
         if ticket.flagged:
@@ -290,7 +290,7 @@ class PDF(FPDF):
         self.set_text_color(*self.style.disabled_color)
 
     def _plot_bar_chart(
-            self, values: list[float], height: float
+        self, values: list[float], height: float
     ) -> tuple[float, float]:
         spacing = 2
         bar_width = 3
@@ -331,7 +331,7 @@ class PDF(FPDF):
         return x - spacing, start_y + height
 
     def bar_chart(
-            self, data: dict[str, float], caption: str, height: float
+        self, data: dict[str, float], caption: str, height: float
     ) -> tuple[float, float]:
         self.__break_page_if_needed(height)
         start_x, start_y = self.x, self.y
@@ -342,9 +342,7 @@ class PDF(FPDF):
             x, y = x + _SMALL_SPACING, start_y + _SMALL_SPACING
 
         legend_labels = [f"{key} ({data[key]:.2f})" for key in data.keys()]
-        x, y = self.legend(
-            legend_labels, x, y, caption
-        )
+        x, y = self.legend(legend_labels, x, y, caption)
         end_x = self.x
         if start_x == self.l_margin:
             self.set_xy(self.x + _LARGE_SPACING, start_y)
@@ -353,10 +351,10 @@ class PDF(FPDF):
         return end_x, y
 
     def pie_chart(
-            self,
-            data: dict[str, float],
-            caption: str,
-            width: float = 70,
+        self,
+        data: dict[str, float],
+        caption: str,
+        width: float = 70,
     ) -> tuple[float, float]:
         """Generate a pie chart in-memory and insert it into the PDF."""
         self.__break_page_if_needed(width)
@@ -387,7 +385,7 @@ class PDF(FPDF):
         return end_x, end_y
 
     def legend(
-            self, labels: list[str], x: float, y: float, caption: str
+        self, labels: list[str], x: float, y: float, caption: str
     ) -> tuple[float, float]:
         self.set_xy(x, y)
         self.set_font(FONT_FAMILY, "", 9)
@@ -404,20 +402,18 @@ class PDF(FPDF):
             self.set_font(FONT_FAMILY, "", LABEL_SIZE)
             label_width = self.get_string_width(label)
             _, y = self.legend_label(color, label, x, y)
-            next_column_x = max(
-                next_column_x, x + int(label_width) + _LARGE_SPACING
-            )
+            next_column_x = max(next_column_x, x + int(label_width) + _LARGE_SPACING)
 
             max_y = max(max_y, y)
 
         return next_column_x, max_y
 
     def legend_label(
-            self,
-            color: tuple[int, int, int],
-            label: str,
-            x: Optional[float] = None,
-            y: Optional[float] = None,
+        self,
+        color: tuple[int, int, int],
+        label: str,
+        x: Optional[float] = None,
+        y: Optional[float] = None,
     ) -> tuple[float, float]:
         """
         Generates a legend label with a colored dot. The label object has the height of 5mm.
@@ -441,7 +437,7 @@ class PDF(FPDF):
         return start_x + 18, start_y + 5
 
     def accent_card(
-            self, accent_color: tuple[int, int, int], width: float, height: float
+        self, accent_color: tuple[int, int, int], width: float, height: float
     ) -> None:
         self.set_draw_color(*self.style.border_color)
         self.rect(
@@ -465,7 +461,9 @@ class PDF(FPDF):
             corner_radius=2.2,
         )
 
-    def bar_chart_with_limit(self, data: dict[str, float], limit: float, caption: str, height: float) -> tuple[float, float]:
+    def bar_chart_with_limit(
+        self, data: dict[str, float], limit: float, caption: str, height: float
+    ) -> tuple[float, float]:
         self.__break_page_if_needed(height)
         start_x, start_y = self.x, self.y
         x, y = self._plot_bar_chart_with_limit(list(data.values()), height, limit)
@@ -475,9 +473,7 @@ class PDF(FPDF):
             x, y = x + _SMALL_SPACING, start_y + _SMALL_SPACING
 
         legend_labels = [f"{key} ({data[key]:.2f})" for key in data.keys()]
-        x, y = self.legend(
-            legend_labels, x, y, caption
-        )
+        x, y = self.legend(legend_labels, x, y, caption)
         end_x = self.x
         if start_x == self.l_margin:
             self.set_xy(self.x + _LARGE_SPACING, start_y)
@@ -486,7 +482,7 @@ class PDF(FPDF):
         return end_x, y
 
     def _plot_bar_chart_with_limit(
-            self, values: list[float], height: float, limit: float
+        self, values: list[float], height: float, limit: float
     ) -> tuple[float, float]:
         spacing = 2
         bar_width = 3

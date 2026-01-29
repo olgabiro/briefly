@@ -3,10 +3,10 @@ from unittest.mock import ANY, MagicMock, call, patch
 
 import pytest
 
-from fpdf_reporting.model.style import NotionStyle
-from fpdf_reporting.model.ticket import Category, Status, Ticket, IssueType
-from fpdf_reporting.rendering.graphs import build_pie_chart_bytes
-from fpdf_reporting.rendering.pdf_generator import PDF
+from briefly.model.style import NotionStyle
+from briefly.model.ticket import Category, Status, Ticket, IssueType
+from briefly.rendering.graphs import build_pie_chart_bytes
+from briefly.rendering.pdf_generator import PDF
 
 
 @pytest.fixture

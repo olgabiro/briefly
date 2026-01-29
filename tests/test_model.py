@@ -1,7 +1,7 @@
 import pytest
 
-from fpdf_reporting.model.report_data import ReportData
-from fpdf_reporting.model.ticket import Status, Ticket, IssueType
+from briefly.model.report_data import ReportData
+from briefly.model.ticket import Status, Ticket, IssueType
 
 
 @pytest.fixture

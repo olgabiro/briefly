@@ -1,6 +1,6 @@
 from typing import Optional, Tuple
 
-from fpdf_reporting.model.ticket import Category, Status
+from briefly.model.ticket import Category, Status
 
 STRIPE_DARK = (10, 37, 64)
 STRIPE_LIGHT_BG = (246, 249, 252)

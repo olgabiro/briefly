@@ -1,4 +1,4 @@
-from fpdf_reporting.model.ticket import IssueType
+from briefly.model.ticket import IssueType
 
 # https://fonts.google.com/icons
 

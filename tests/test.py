@@ -3,9 +3,9 @@ import random
 
 import pytest
 
-from fpdf_reporting.model.style import MochaStyle
-from fpdf_reporting.model.ticket import Category, Status, Ticket
-from fpdf_reporting.rendering.pdf_generator import PDF
+from briefly.model.style import MochaStyle
+from briefly.model.ticket import Category, Status, Ticket
+from briefly.rendering.pdf_generator import PDF
 
 DARK_BACKGROUND = (38, 33, 43)
 

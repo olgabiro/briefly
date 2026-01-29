@@ -1,9 +1,9 @@
 import datetime
 from pathlib import Path
 
-from fpdf_reporting.model.style import MochaStyle
-from fpdf_reporting.model.ticket import Ticket, Status, IssueType, Category
-from fpdf_reporting.rendering.pdf_generator import PDF
+from briefly.model.style import MochaStyle
+from briefly.model.ticket import Ticket, Status, IssueType, Category
+from briefly.rendering.pdf_generator import PDF
 
 TEST_DIRECTORY = Path(__file__).parent
 REPORT_PATH = TEST_DIRECTORY / "output/sample_report.pdf"

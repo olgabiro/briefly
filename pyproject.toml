@@ -3,10 +3,10 @@ requires = ["setuptools>=77.0.3"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "pdf-reporting"
+name = "briefly"
 version = "0.1.1"
 readme = "README.md"
-description = "A package for generating PDF reports."
+description = "A modern way to build beautiful PDF reports."
 requires-python = ">=3.14"
 
 dependencies = [
@@ -24,10 +24,10 @@ dev = [
 ]
 
 [project.scripts]
-lint = "fpdf_reporting.cli:lint"
-format = "fpdf_reporting.cli:format"
-typecheck = "fpdf_reporting.cli:typecheck"
-coverage = "fpdf_reporting.cli:coverage"
+lint = "briefly.cli:lint"
+format = "briefly.cli:format"
+typecheck = "briefly.cli:typecheck"
+coverage = "briefly.cli:coverage"
 
 [tool.ruff]
 line-length = 88
@@ -45,10 +45,10 @@ exclude = "tests/"
 where = ["src"]
 
 [tool.setuptools.package-data]
-"fpdf_reporting.fonts" = ["*.ttf"]
+"briefly.fonts" = ["*.ttf"]
 
 [tool.pytest.ini_options]
-addopts = "--cov=fpdf_reporting --cov-report=term-missing"
+addopts = "--cov=briefly --cov-report=term-missing"
 testpaths = ["tests"]
 
 [tool.coverage.run]
@@ -57,7 +57,7 @@ omit = [
     "cli.py",
 ]
 branch = true
-source = ["fpdf_reporting"]
+source = ["briefly"]
 
 [tool.coverage.report]
 show_missing = true
