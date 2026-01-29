@@ -64,7 +64,7 @@ def test():
         "A very very very very very very long and very very very very complex task",
         "In Progress",
         date(2025, 10, 12),
-        1,
+        3,
         8,
         link="https://google.com",
     )
@@ -74,8 +74,8 @@ def test():
         "A very very very very very very long and very very very very complex task with some addition stuff",
         "In Progress",
         date(2025, 10, 12),
-        1,
-        8,
+        2,
+        21,
         flagged=True,
         link="https://google.com",
     )
@@ -88,7 +88,7 @@ def test():
         "cat5": 2,
         "cat6": 20,
         "cat7": 15,
-        "cat8": 10,
+        "cat8": 120,
     }
 
     pdf.bar_chart(data, caption="Categories", height=30)

@@ -67,6 +67,8 @@ class PDF(FPDF):
         self.set_font(FONT_FAMILY, "B", SECTION_TITLE_SIZE)
         self.set_text_color(*self.style.section_title_color)
         self.cell(0, 10, text, link=link or 0, new_y=YPos.NEXT)
+        self.set_font(FONT_FAMILY, size=TEXT_SIZE)
+        self.set_text_color(*self.style.font_color)
         self.set_y(self.get_y() + _MEDIUM_SPACING)
 
     def summary_card(self, items: List[str], width: int = 80) -> tuple[float, float]:
@@ -208,7 +210,7 @@ class PDF(FPDF):
         else:
             x = text_start_x + 15
 
-        x, _ = self._priority_icons(priority, flagged, x, y)
+        x, _ = self._priority_icons(priority, flagged, x + 6, y)
 
         story_points_text = f"SP: {estimate or 'N/A'}"
         x, _ = self._small_label(story_points_text, x + 6, y)
@@ -339,7 +341,7 @@ class PDF(FPDF):
                 )
                 bar_height = height * value / max_value
                 y = start_y + height - bar_height
-                if bar_height > 1.5:
+                if bar_height > 0.7:
                     self.rect(
                         x,
                         y,
@@ -347,8 +349,10 @@ class PDF(FPDF):
                         bar_height,
                         style="F",
                         round_corners=True,
-                        corner_radius=1.5,
+                        corner_radius=0.5,
                     )
+                else:
+                    self.rect(x, y, bar_width, bar_height, style="F")
             x += bar_width + spacing
 
         return x - spacing, start_y + height

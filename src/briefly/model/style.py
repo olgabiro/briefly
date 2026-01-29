@@ -34,7 +34,7 @@ class PurpleHaze(Style):
     font_color = (43, 34, 43)
     header_color = (255, 255, 255)
     header_background = (129, 126, 160)
-    section_title_color = (255, 255, 255)
+    section_title_color = (43, 34, 43)
     card_background = (247, 246, 243)
     table_header_color = (189, 184, 203)
     table_row_colors = [(255, 255, 255), (247, 246, 243)]
