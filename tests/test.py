@@ -1,3 +1,5 @@
+from datetime import date
+
 import pytest
 
 from briefly.model.style import MochaStyle
@@ -40,6 +42,42 @@ def test():
             ["PROJ-103", "Payment gateway issue", "Blocked", "Eve"],
         ],
         col_widths=[20, 80, 30, 30],
+    )
+
+    pdf.task_card(
+        "TEST-123",
+        "Analysis of performance issues",
+        "In Progress",
+        date(2025, 10, 12),
+        1,
+        8,
+        link="https://google.com",
+    )
+    pdf.task_card(
+        "TEST-421",
+        "Refactoring of processing",
+        "To Do",
+    )
+
+    pdf.task_card(
+        "TEST-123",
+        "A very very very very very very long and very very very very complex task",
+        "In Progress",
+        date(2025, 10, 12),
+        1,
+        8,
+        link="https://google.com",
+    )
+
+    pdf.task_card(
+        "TEST-123",
+        "A very very very very very very long and very very very very complex task with some addition stuff",
+        "In Progress",
+        date(2025, 10, 12),
+        1,
+        8,
+        flagged=True,
+        link="https://google.com",
     )
 
     data = {

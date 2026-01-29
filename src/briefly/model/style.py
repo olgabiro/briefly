@@ -34,6 +34,7 @@ class PurpleHaze(Style):
     font_color = (43, 34, 43)
     header_color = (255, 255, 255)
     header_background = (129, 126, 160)
+    section_title_color = (255, 255, 255)
     border_color = (232, 227, 232)
     priority_color = (191, 106, 95)
     disabled_color = (167, 154, 167)

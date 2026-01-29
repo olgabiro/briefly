@@ -1,13 +1,14 @@
-from datetime import datetime
+from datetime import datetime, date
 from importlib.resources import files
 from typing import Any, List, Optional, Tuple
 
-from fpdf import FPDF, YPos
+from fpdf import FPDF, YPos, XPos
+from fpdf.enums import MethodReturnValue
 
 from briefly.model.style import Style, PurpleHaze
 from briefly.rendering.font_spec import FONT_FAMILY, FONTS, ICON_FONT_FAMILY
 from briefly.rendering.graphs import build_pie_chart_bytes
-from briefly.rendering.icons import FLAG_ICON
+from briefly.rendering.icons import FLAG_ICON, DUE_DATE_ICON, PRIORITY_ICON
 
 HEADER_SIZE: int = 20
 SECTION_TITLE_SIZE: int = 13
@@ -151,117 +152,134 @@ class PDF(FPDF):
         self.set_x(x + text_w)
         return text_w, text_h
 
-    # def detailed_tickets_table(self, tickets: list[Ticket]) -> None:
-    #     self.set_font(FONT_FAMILY, "", TEXT_SIZE)
-    #
-    #     for t in tickets:
-    #         self.ticket_card_long(t)
-
-    # def ticket_card_long(self, ticket: Ticket) -> None:
-    #     width = self.w - self.r_margin - self.l_margin
-    #     height = 16
-    #     self.__break_page_if_needed(height)
-    #     start_x = self.x
-    #     start_y = self.y
-    #     left_padding = 6
-    #     block_width = 20
-    #
-    #     stripe_color: tuple[int, int, int] = self.style.category_colors.get(
-    #         ticket.category, self.style.border_color
-    #     )
-    #     self.accent_card(stripe_color, width, height)
-    #
-    #     self.set_xy(start_x + left_padding, start_y + _SMALL_SPACING)
-    #     key_width = 12
-    #     self.tag(ticket.status.value)
-    #     self.set_font(FONT_FAMILY, "B", LABEL_SIZE)
-    #     self.set_text_color(*self.style.font_color)
-    #     self.set_x(start_x + left_padding + block_width)
-    #     self.cell(key_width, 5, ticket.key, align="R")
-    #     self.set_font(FONT_FAMILY, "", TEXT_SIZE)
-    #     title_width = (
-    #             width - key_width - left_padding - _SMALL_SPACING - block_width - 5
-    #     )
-    #     self.cell(title_width, 5, ticket.summary)
-    #     if ticket.flagged:
-    #         self._flagged_icon(self.x + 2, self.y)
-    #
-    #     self.set_xy(start_x + left_padding, self.y + 5 + _SMALL_SPACING)
-    #     if ticket.priority:
-    #         dot_color: tuple[int, int, int] = self.style.priority_colors.get(
-    #             ticket.priority, (217, 241, 208)
-    #         )
-    #         self.legend_label(dot_color, ticket.priority)
-    #
-    #     self.set_x(start_x + left_padding + block_width)
-    #     self.tag(ticket.issue_type)
-    #     self.set_x(start_x + left_padding + block_width * 2)
-    #     self.tag(f"SP: {ticket.story_points or 'N/A'}")
-    #     self.set_x(start_x + left_padding + block_width * 3)
-    #     if ticket.component:
-    #         self.tag(ticket.component)
-    #     self.set_y(start_y + height + _MEDIUM_SPACING)
-
     def _break_page_if_needed(self, content_height: float) -> None:
         if self.y + content_height >= self.h - self.b_margin:
             self.add_page()
 
-    # def ticket_card_short(self, ticket: Ticket) -> None:
-    #     width = 77.5
-    #     height = 30
-    #     self.__break_page_if_needed(height)
-    #
-    #     start_x, start_y = self.x, self.y
-    #     row_height = 5
-    #
-    #     stripe_color: tuple[int, int, int] = self.style.category_colors.get(
-    #         ticket.category, self.style.border_color
-    #     )
-    #     self.accent_card(stripe_color, width, height)
-    #
-    #     if ticket.flagged:
-    #         self.set_text_color(*self.style.disabled_color)
-    #
-    #     text_start_x = start_x + 12.5
-    #     self.set_font(FONT_FAMILY, "B", LABEL_SIZE)
-    #     self.set_xy(text_start_x, start_y + 9)
-    #     self.cell(
-    #         15, row_height, ticket.key, align="R", new_x=XPos.LEFT, new_y=YPos.NEXT
-    #     )
-    #     _, y = self._two_line_label(ticket.status.value, text_start_x, self.y + 1)
-    #     y = y + 1
-    #     self.set_xy(text_start_x - 3, y + 0.2)
-    #     self.set_font(ICON_FONT_FAMILY, "", 7)
-    #     self.cell(3, row_height, DUE_DATE_ICON, align="L")
-    #     x, _ = self._small_label(
-    #         ticket.due_date.strftime("%d.%m.%Y") if ticket.due_date else "",
-    #         text_start_x,
-    #         y,
-    #     )
-    #
-    #     x, _ = self._small_label(ticket.priority or "N/A", x, y)
-    #     story_points_text = f"SP: {ticket.story_points or 'N/A'}"
-    #     x, _ = self._small_label(story_points_text, x + 6, y)
-    #     if ticket.flagged:
-    #         self._flagged_icon(x + 8, y)
-    #
-    #     self.set_font(FONT_FAMILY, "", TEXT_SIZE)
-    #     self.set_xy(text_start_x + 15, start_y + 4)
-    #     summary_width = self.get_string_width(ticket.summary)
-    #     if summary_width <= 45:
-    #         self.cell(45, 4, ticket.summary, align="L")
-    #     elif summary_width >= 150:
-    #         self.multi_cell(
-    #             45, 15, f"{ticket.summary[:70]}...", max_line_height=4, align="L"
-    #         )
-    #     else:
-    #         self.multi_cell(45, 14, ticket.summary, max_line_height=4, align="L")
-    #
-    #     self.set_text_color(*self.style.font_color)
-    #     if start_x == self.l_margin:
-    #         self.set_xy(start_x + width + _MEDIUM_SPACING, start_y)
-    #     else:
-    #         self.set_y(start_y + height + _MEDIUM_SPACING)
+    def task_card(
+        self,
+        task_id: str,
+        title: str,
+        status: str,
+        due_date: Optional[date] = None,
+        priority: Optional[int] = None,
+        estimate: Optional[int] = None,
+        flagged: bool = False,
+        link: str | int = 0,
+    ) -> None:
+        width = 77.5
+        height = 30
+        self._break_page_if_needed(height)
+
+        start_x, start_y = self.x, self.y
+        row_height = 5
+
+        stripe_color: tuple[int, int, int] = (
+            self.style.priority_color if flagged else self.style.border_color
+        )
+        self.accent_card(stripe_color, width, height)
+
+        if flagged:
+            self.set_text_color(*self.style.disabled_color)
+
+        text_start_x = start_x + 12.5
+        self.set_font(FONT_FAMILY, "B", LABEL_SIZE)
+        self.set_xy(text_start_x, start_y + 9)
+        self.cell(
+            15,
+            row_height,
+            task_id,
+            align="R",
+            link=link,
+            new_x=XPos.LEFT,
+            new_y=YPos.NEXT,
+        )
+
+        _, y = self._two_line_label(status, text_start_x, self.y + 1)
+        y = y + 1
+        self.set_xy(text_start_x - 3, y + 0.2)
+        if due_date:
+            self.set_font(ICON_FONT_FAMILY, "", 7)
+            self.cell(3, row_height, DUE_DATE_ICON, align="L")
+            x, _ = self._small_label(
+                due_date.strftime("%d.%m.%Y") if due_date else "N/A",
+                text_start_x,
+                y,
+            )
+        else:
+            x = text_start_x + 15
+
+        x, _ = self._priority_icons(priority, flagged, x, y)
+
+        story_points_text = f"SP: {estimate or 'N/A'}"
+        x, _ = self._small_label(story_points_text, x + 6, y)
+        if flagged:
+            self._flagged_icon(x + 8, y)
+
+        self._task_title(title, text_start_x + 15, start_y + 4, link=link)
+
+        self.set_text_color(*self.style.font_color)
+        if start_x == self.l_margin:
+            self.set_xy(start_x + width + _MEDIUM_SPACING, start_y)
+        else:
+            self.set_y(start_y + height + _MEDIUM_SPACING)
+
+    def _task_title(self, title: str, x: float, y: float, link: str | int = 0) -> None:
+        self.set_xy(x, y)
+        self.set_font(FONT_FAMILY, size=TEXT_SIZE)
+        title_lines = self.multi_cell(
+            45,
+            15,
+            title,
+            max_line_height=4,
+            dry_run=True,
+            output=MethodReturnValue.LINES,
+        )
+        if len(title_lines) == 1:
+            self.cell(45, 5, title, align="L", link=link)
+        elif len(title_lines) < 4:
+            self.multi_cell(45, 15, title, align="L", max_line_height=4, link=link)
+        else:
+            title_lines[3] = self._trim_with_ellipsis(title_lines[3], 45)
+            title = " ".join(title_lines[0:4])
+            self.multi_cell(45, 15, title, align="L", max_line_height=4, link=link)
+
+    def _trim_with_ellipsis(self, text: str, column_width: int) -> str:
+        ellipsis_chars = "..."
+        trimmed_text = text + ellipsis_chars
+        string_width = self.get_string_width(trimmed_text)
+        words = text.split()
+
+        while string_width > (column_width - 1):
+            words = words[:-1]
+            trimmed_text = " ".join(words) + ellipsis_chars
+            string_width = self.get_string_width(trimmed_text)
+
+        return trimmed_text
+
+    def _priority_icons(
+        self,
+        priority: Optional[int],
+        flagged: bool = False,
+        x: Optional[float] = None,
+        y: Optional[float] = None,
+    ) -> tuple[float, float]:
+        x, y = x or self.x, y or self.y
+        if priority:
+            self.set_font(ICON_FONT_FAMILY, size=ICON_FONT_SIZE)
+            self.set_xy(x, y + 0.5)
+            if priority == 1:
+                self.set_text_color(*self.style.priority_color)
+
+            text = PRIORITY_ICON * (5 - priority)
+            self.cell(15, 5, text)
+            self.set_font(FONT_FAMILY, size=LABEL_SIZE)
+            if flagged:
+                self.set_text_color(*self.style.disabled_color)
+            else:
+                self.set_text_color(*self.style.font_color)
+        self.set_xy(x + 15, y)
+        return x + 15, y + 3
 
     def _small_label(self, text: str, x: float, y: float) -> tuple[float, float]:
         self.set_font(FONT_FAMILY, "", LABEL_SIZE)
@@ -354,6 +372,7 @@ class PDF(FPDF):
         """Generate a pie chart in-memory and insert it into the PDF."""
         self._break_page_if_needed(height)
 
+        self.set_x(self.x - _SMALL_SPACING)
         img_buf = build_pie_chart_bytes(
             list(data.values()), colors=self.style.chart_colors
         )
@@ -373,7 +392,7 @@ class PDF(FPDF):
             legend_y = y + _SMALL_SPACING
         legend_labels = [f"{key} ({data[key]})" for key in data.keys()]
         end_x, end_y = self.legend(legend_labels, legend_x, legend_y, caption)
-        if x == self.l_margin:
+        if x <= self.l_margin:
             self.set_xy(end_x + _LARGE_SPACING, y)
         else:
             self.set_xy(self.l_margin, y + height + _LARGE_SPACING)

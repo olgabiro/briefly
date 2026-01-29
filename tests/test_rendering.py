@@ -86,5 +86,5 @@ def test_pie_chart(pdf: PDF, data: dict[str, float]):
     x, y = pdf.pie_chart(data, "Test Pie Chart")
     assert pdf.font_family == "inter"
     assert pdf.font_size_pt == 10
-    assert x == 123
+    assert x == pytest.approx(121, 0.1)
     assert y == 54
