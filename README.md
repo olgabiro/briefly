@@ -1,4 +1,4 @@
-![CI](https://github.com/olgabiro/briefly/actions/workflows/build.yml/badge.svg)
+# Briefly
 
 A modern way to build beautiful PDF reports.
 
