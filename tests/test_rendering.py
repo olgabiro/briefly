@@ -36,7 +36,7 @@ def test_graph_with_negative_values():
 
 
 def test_header(pdf: PDF):
-    pdf.document_header("TEST - Header")
+    pdf.main_title("TEST - Header")
     assert pdf.font_family == "inter"
     assert pdf.get_y() == 55
     assert pdf.get_x() == 25

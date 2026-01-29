@@ -1,3 +1,4 @@
+from datetime import datetime
 from importlib.resources import files
 from typing import Any, List, Optional, Tuple
 
@@ -28,6 +29,7 @@ class PDF(FPDF):
         self.style = style
         self.set_margin(MARGIN_SIZE)
         self.set_page_background(style.background_color)
+        self.generation_time = datetime.now()
         self.setup_fonts()
 
     def setup_fonts(self) -> None:
@@ -38,22 +40,17 @@ class PDF(FPDF):
 
     def footer(self) -> None:
         self.set_y(-15)
-        self.set_font(FONT_FAMILY, "I", 8)
-        self.cell(0, 10, f"Page {self.page_no()}", align="C")
+        self.set_font(FONT_FAMILY, "I", 7)
+        time_str: str = self.generation_time.strftime("%d.%m.%Y %H:%M:%S")
+        self.cell(0, 10, time_str, align="L")
+        self.cell(0, 10, f"Page {self.page_no()}", align="R")
 
-    def document_header(self, text: str) -> None:
+    def main_title(self, text: str) -> None:
         self.set_font(FONT_FAMILY, "B", size=HEADER_SIZE)
         self.set_fill_color(*self.style.header_background)
         self.set_text_color(*self.style.header_color)
-        self.cell(
-            0,
-            HEADER_SIZE,
-            text,
-            align="C",
-            fill=True,
-            new_x=XPos.LMARGIN,
-            new_y=YPos.NEXT,
-        )
+        self.cell(0, HEADER_SIZE, text, align="C", fill=True, new_y=YPos.NEXT)
+        self.set_text_color(*self.style.font_color)
         self.set_y(self.get_y() + _LARGE_SPACING)
 
     def divider(self) -> None:
@@ -508,7 +505,7 @@ class PDF(FPDF):
             x += bar_width + spacing
 
         limit_line_y = start_y + height - height * limit / max_value
-        self.set_draw_color(*self.style.priority_colors["High"])
+        self.set_draw_color(*self.style.priority_color)
         self.set_line_width(0.4)
         self.line(start_x, limit_line_y, x - spacing, limit_line_y)
         self.set_line_width(0.2)

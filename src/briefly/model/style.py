@@ -50,7 +50,7 @@ class PurpleHaze(Style):
 
 
 class NotionStyle(Style):
-    priority_color: (252, 216, 212)
+    priority_color: Tuple[int, int, int] = (252, 216, 212)
 
     chart_colors: list[Tuple[int, int, int]] = [
         (155, 207, 87),  # green

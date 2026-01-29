@@ -12,7 +12,7 @@ def test():
     pdf = PDF(style)
     pdf.add_page()
 
-    pdf.document_header("JIRA Summary Test")
+    pdf.main_title("JIRA Summary Test")
 
     pdf.section_title("Overview")
     pdf.summary_card(

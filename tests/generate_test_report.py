@@ -10,7 +10,7 @@ REPORT_PATH = TEST_DIRECTORY / "output/sample_report.pdf"
 def generate_report(report_path: Path) -> None:
     pdf = PDF(MochaStyle())
     pdf.add_page()
-    pdf.document_header("Sample Report")
+    pdf.main_title("Sample Report")
     pdf.section_title("Introduction")
     x, y = pdf.summary_card(
         [
