@@ -302,12 +302,23 @@ class PDF(FPDF):
         self.set_text_color(*self.style.disabled_color)
 
     def _plot_bar_chart(
-        self, values: list[float], height: float
+        self, values: list[float], height: float, max_width: Optional[float] = None
     ) -> tuple[float, float]:
-        spacing = 2
-        bar_width = 3
+        if not values:
+            return self.x, self.y
+
+        spacing: float = 2
+        bar_width: float = 3
         x = self.x
         start_y = self.y
+
+        if max_width is not None:
+            total_bars_width = len(values) * bar_width + (len(values) - 1) * spacing
+            if total_bars_width > max_width:
+                scale_factor: float = max_width / total_bars_width
+                bar_width *= scale_factor
+                spacing *= scale_factor
+
         width = x + len(values) * (bar_width + spacing) + spacing
         max_value = max(values) if values else 0
 
@@ -343,18 +354,33 @@ class PDF(FPDF):
         return x - spacing, start_y + height
 
     def bar_chart(
-        self, data: dict[str, float], caption: str, height: float
+        self,
+        data: dict[str, float],
+        caption: str,
+        height: float = 30,
+        wide: bool = False,
     ) -> tuple[float, float]:
+        if not data.keys():
+            return self.x, self.y
+
         self._break_page_if_needed(height)
         start_x, start_y = self.x, self.y
-        x, y = self._plot_bar_chart(list(data.values()), height)
+
+        sorted_labels = sorted(data)
+        values = [data[label] for label in sorted_labels]
+        chart_width = 40 if wide else 28
+
+        x, y = self._plot_bar_chart(values, height, chart_width)
         if len(data.keys()) > 12:
             x, y = start_x, y + _SMALL_SPACING
         else:
             x, y = x + _SMALL_SPACING, start_y + _SMALL_SPACING
 
-        legend_labels = [f"{key} ({data[key]:.2f})" for key in data.keys()]
-        x, y = self.legend(legend_labels, x, y, caption)
+        legend_start_x = x + _MEDIUM_SPACING if wide else start_x + 30
+        legend_start_y = start_y + _SMALL_SPACING if height >= 30 else start_y - 1
+
+        legend_labels = [f"{key} ({data[key]:.2f})" for key in sorted_labels]
+        x, y = self.legend(legend_labels, legend_start_x, legend_start_y, caption)
         end_x = x
         if start_x == self.l_margin:
             self.set_xy(end_x + _LARGE_SPACING, start_y)

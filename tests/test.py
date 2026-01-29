@@ -106,5 +106,5 @@ def test():
     )
 
     pdf.bar_chart(data, caption="Categories", height=30)
-    pdf.bar_chart(data, caption="Categories", height=30)
+    pdf.bar_chart(data, caption="Categories", height=25, wide=True)
     pdf.output("./output/test.pdf")
