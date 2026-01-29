@@ -3,7 +3,7 @@ from typing import Any, List, Optional, Tuple
 
 from fpdf import FPDF, XPos, YPos
 
-from briefly.model.style import Style
+from briefly.model.style import Style, PurpleHaze
 from briefly.rendering.font_spec import FONT_FAMILY, FONTS, ICON_FONT_FAMILY
 from briefly.rendering.graphs import build_pie_chart_bytes
 from briefly.rendering.icons import FLAG_ICON
@@ -23,7 +23,7 @@ _LARGE_SPACING: float = 10
 class PDF(FPDF):
     style: Style
 
-    def __init__(self, style: Style, **kwargs: Any) -> None:
+    def __init__(self, style: Style = PurpleHaze(), **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.style = style
         self.set_margin(MARGIN_SIZE)
@@ -108,10 +108,10 @@ class PDF(FPDF):
         return start_x + width, start_y + card_height
 
     def styled_table(
-            self,
-            headers: list[str],
-            rows: list[tuple[str, str, str, str]],
-            col_widths: list[int],
+        self,
+        headers: list[str],
+        rows: list[tuple[str, str, str, str]],
+        col_widths: list[int],
     ) -> None:
         self.set_font(FONT_FAMILY, "B", TEXT_SIZE)
         self.set_fill_color(*self.style.table_header_color)
@@ -280,14 +280,14 @@ class PDF(FPDF):
 
     def _flagged_icon(self, x: float, y: float) -> None:
         self.set_font(ICON_FONT_FAMILY, "", ICON_FONT_SIZE)
-        self.set_text_color(*self.style.priority_colors["Medium"])
+        self.set_text_color(*self.style.priority_color)
         self.set_xy(x, y + 0.3)
         self.cell(3, 5, FLAG_ICON, align="R")
         self.set_xy(self.x, y - 0.3)
         self.set_text_color(*self.style.disabled_color)
 
     def _plot_bar_chart(
-            self, values: list[float], height: float
+        self, values: list[float], height: float
     ) -> tuple[float, float]:
         spacing = 2
         bar_width = 3
@@ -328,7 +328,7 @@ class PDF(FPDF):
         return x - spacing, start_y + height
 
     def bar_chart(
-            self, data: dict[str, float], caption: str, height: float
+        self, data: dict[str, float], caption: str, height: float
     ) -> tuple[float, float]:
         self.__break_page_if_needed(height)
         start_x, start_y = self.x, self.y
@@ -348,10 +348,10 @@ class PDF(FPDF):
         return end_x, y
 
     def pie_chart(
-            self,
-            data: dict[str, float],
-            caption: str,
-            width: float = 70,
+        self,
+        data: dict[str, float],
+        caption: str,
+        width: float = 70,
     ) -> tuple[float, float]:
         """Generate a pie chart in-memory and insert it into the PDF."""
         self.__break_page_if_needed(width)
@@ -382,7 +382,7 @@ class PDF(FPDF):
         return end_x, end_y
 
     def legend(
-            self, labels: list[str], x: float, y: float, caption: str
+        self, labels: list[str], x: float, y: float, caption: str
     ) -> tuple[float, float]:
         self.set_xy(x, y)
         self.set_font(FONT_FAMILY, "", 9)
@@ -406,11 +406,11 @@ class PDF(FPDF):
         return next_column_x, max_y
 
     def legend_label(
-            self,
-            color: tuple[int, int, int],
-            label: str,
-            x: Optional[float] = None,
-            y: Optional[float] = None,
+        self,
+        color: tuple[int, int, int],
+        label: str,
+        x: Optional[float] = None,
+        y: Optional[float] = None,
     ) -> tuple[float, float]:
         """
         Generates a legend label with a colored dot. The label object has the height of 5mm.
@@ -434,7 +434,7 @@ class PDF(FPDF):
         return start_x + 18, start_y + 5
 
     def accent_card(
-            self, accent_color: tuple[int, int, int], width: float, height: float
+        self, accent_color: tuple[int, int, int], width: float, height: float
     ) -> None:
         self.set_draw_color(*self.style.border_color)
         self.rect(
@@ -459,7 +459,7 @@ class PDF(FPDF):
         )
 
     def bar_chart_with_limit(
-            self, data: dict[str, float], limit: float, caption: str, height: float
+        self, data: dict[str, float], limit: float, caption: str, height: float
     ) -> tuple[float, float]:
         self.__break_page_if_needed(height)
         start_x, start_y = self.x, self.y
@@ -479,7 +479,7 @@ class PDF(FPDF):
         return end_x, y
 
     def _plot_bar_chart_with_limit(
-            self, values: list[float], height: float, limit: float
+        self, values: list[float], height: float, limit: float
     ) -> tuple[float, float]:
         spacing = 2
         bar_width = 3

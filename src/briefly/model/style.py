@@ -16,7 +16,7 @@ MINIMALIST_ROW_ALT = (247, 249, 252)
 class Style:
     background_color: Tuple[int, int, int]
     chart_colors: list[Tuple[int, int, int]]
-    priority_colors: dict[str, Tuple[int, int, int]]
+    priority_color: Tuple[int, int, int]
     card_background: Tuple[int, int, int]
     header_background: Tuple[int, int, int]
     table_header_color: Tuple[int, int, int]
@@ -29,12 +29,29 @@ class Style:
     disabled_color: Tuple[int, int, int]
 
 
+class PurpleHaze(Style):
+    background_color = (255, 255, 255)
+    font_color = (43, 34, 43)
+    header_color = (255, 255, 255)
+    header_background = (129, 126, 160)
+    border_color = (232, 227, 232)
+    priority_color = (191, 106, 95)
+    disabled_color = (167, 154, 167)
+    chart_colors = [
+        (68, 68, 118),
+        (91, 91, 135),
+        (115, 115, 152),
+        (138, 138, 169),
+        (161, 161, 186),
+        (185, 185, 203),
+        (208, 208, 220),
+        (232, 232, 238),
+    ]
+
+
 class NotionStyle(Style):
-    priority_colors: dict[str, Tuple[int, int, int]] = {
-        "High": (252, 216, 212),  # red
-        "Medium": (255, 232, 163),  # yellow
-        "Low": (217, 241, 208),  # green
-    }
+    priority_color: (252, 216, 212)
+
     chart_colors: list[Tuple[int, int, int]] = [
         (155, 207, 87),  # green
         (246, 199, 68),  # yellow
@@ -76,11 +93,7 @@ class LatteStyle(Style):
         (30, 102, 245),
         (114, 135, 253),
     ]
-    priority_colors: dict[str, Tuple[int, int, int]] = {
-        "High": (210, 15, 57),  # red
-        "Medium": (223, 142, 29),  # yellow
-        "Low": (64, 160, 43),  # green
-    }
+    priority_color: Tuple[int, int, int] = (210, 15, 57)
     card_background: Tuple[int, int, int] = (220, 224, 232)
     header_background: Tuple[int, int, int] = (220, 138, 120)
     table_header_color: Tuple[int, int, int] = (172, 176, 190)
