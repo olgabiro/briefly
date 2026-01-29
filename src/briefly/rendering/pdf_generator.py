@@ -1,6 +1,6 @@
 from datetime import datetime, date
 from importlib.resources import files
-from typing import Any, List, Optional, Tuple
+from typing import Any, List, Optional, Tuple, TypeVar, Mapping
 
 from fpdf import FPDF, YPos, XPos
 from fpdf.enums import MethodReturnValue
@@ -21,6 +21,7 @@ _SMALL_SPACING: float = 2
 _MEDIUM_SPACING: float = 5
 _LARGE_SPACING: float = 10
 
+K = TypeVar("K", bound=str)
 
 class PDF(FPDF):
     style: Style
@@ -359,7 +360,7 @@ class PDF(FPDF):
 
     def bar_chart(
         self,
-        data: dict[str, float],
+        data: Mapping[K, float],
         caption: str,
         height: float = 30,
         wide: bool = False,
@@ -394,7 +395,7 @@ class PDF(FPDF):
 
     def pie_chart(
         self,
-        data: dict[str, float],
+        data: Mapping[K, float],
         caption: str,
         height: float = 70,
     ) -> tuple[float, float]:
