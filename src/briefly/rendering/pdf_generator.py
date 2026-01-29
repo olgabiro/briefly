@@ -65,7 +65,7 @@ class PDF(FPDF):
         self._break_page_if_needed(content_height=40)
         self.set_font(FONT_FAMILY, "B", SECTION_TITLE_SIZE)
         self.set_text_color(*self.style.section_title_color)
-        self.cell(0, 10, text, link=link, new_y=YPos.NEXT)
+        self.cell(0, 10, text, link=link or 0, new_y=YPos.NEXT)
         self.set_y(self.get_y() + _MEDIUM_SPACING)
 
     def summary_card(self, items: List[str], width: int = 80) -> tuple[float, float]:
@@ -73,8 +73,7 @@ class PDF(FPDF):
         row_height = 6
         card_height = (len(items) * row_height) + 2 * padding
         self._break_page_if_needed(card_height)
-        start_x = self.x
-        start_y = self.y
+        start_x, start_y = self.x, self.y
 
         if start_y + card_height >= self.h - self.b_margin:
             self.add_page()
@@ -109,7 +108,7 @@ class PDF(FPDF):
     def styled_table(
         self,
         headers: list[str],
-        rows: list[tuple[str, str, str, str]],
+        rows: list[list[str]],
         col_widths: list[int],
     ) -> None:
         self.set_font(FONT_FAMILY, "B", TEXT_SIZE)
@@ -393,11 +392,11 @@ class PDF(FPDF):
         legend_colors = self.style.chart_colors
         for idx, label in enumerate(labels):
             if idx % 4 == 0:
-                x, y = next_column_x, legend_start_y
+                self.set_xy(next_column_x, legend_start_y)
             color = legend_colors[idx % len(legend_colors)]
             self.set_font(FONT_FAMILY, "", LABEL_SIZE)
             label_width = self.get_string_width(label)
-            _, y = self.legend_label(color, label, x, y)
+            _, y = self.legend_label(color, label)
             next_column_x = max(next_column_x, x + int(label_width) + _LARGE_SPACING)
 
             max_y = max(max_y, y)
@@ -405,32 +404,25 @@ class PDF(FPDF):
         return next_column_x, max_y
 
     def legend_label(
-        self,
-        color: tuple[int, int, int],
-        label: str,
-        x: Optional[float] = None,
-        y: Optional[float] = None,
+        self, color: tuple[int, int, int], label: str
     ) -> tuple[float, float]:
         """
         Generates a legend label with a colored dot. The label object has the height of 5mm.
         :param color: the color of the dot
         :param label: the text of the label
-        :param x: the x position of the label (optional)
-        :param y: the y position of the label (optional)
         :return: the position of the bottom right corner of the label
         """
-        start_x = x or self.x
-        start_y = y or self.y
-
-        self.set_xy(start_x, start_y)
+        start_x, start_y = self.x, self.y
         self.set_fill_color(*color)
         self.ellipse(start_x + 1, start_y + 1.5, 2, 2, style="F")
         self.set_x(start_x + 3)
-        self.set_font(FONT_FAMILY, "", LABEL_SIZE)
+        self.set_font(FONT_FAMILY, size=LABEL_SIZE)
         self.set_text_color(*self.style.font_color)
-        self.cell(15, 5, label)
-        self.set_font(FONT_FAMILY, "", TEXT_SIZE)
-        return start_x + 18, start_y + 5
+        text_length = self.get_string_width(label)
+        self.cell(15, 5, label, new_y=YPos.NEXT)
+        self.set_font(FONT_FAMILY, size=TEXT_SIZE)
+        self.set_x(start_x)
+        return start_x + text_length, self.y
 
     def accent_card(
         self, accent_color: tuple[int, int, int], width: float, height: float

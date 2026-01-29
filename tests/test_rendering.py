@@ -62,9 +62,9 @@ def test_styled_table(pdf: PDF):
     pdf.styled_table(
         ["header1", "header2", "header3", "header4"],
         [
-            ("asd", "asd", "asd", "asd"),
-            ("asd", "asd", "asd", "asd"),
-            ("asd", "asd", "asd", "asd"),
+            ["asd", "asd", "asd", "asd"],
+            ["asd", "asd", "asd", "asd"],
+            ["asd", "asd", "asd", "asd"],
         ],
         [30, 15, 20, 5],
     )

@@ -35,9 +35,9 @@ def test():
     pdf.styled_table(
         headers=["Key", "Summary", "Status", "Assignee"],
         rows=[
-            ("PROJ-101", "Fix login flow", "Done", "Alice"),
-            ("PROJ-102", "Add metrics dashboard", "In Progress", "Bob"),
-            ("PROJ-103", "Payment gateway issue", "Blocked", "Eve"),
+            ["PROJ-101", "Fix login flow", "Done", "Alice"],
+            ["PROJ-102", "Add metrics dashboard", "In Progress", "Bob"],
+            ["PROJ-103", "Payment gateway issue", "Blocked", "Eve"],
         ],
         col_widths=[20, 80, 30, 30],
     )
