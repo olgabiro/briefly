@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "briefly"
-version = "0.2.1"
+version = "0.2.2"
 description = "A modern way to build beautiful PDF reports."
 readme = "README.md"
 requires-python = ">=3.14"
@@ -53,6 +53,7 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 "briefly.fonts" = ["*.ttf"]
+briefly = ["py.typed"]
 
 [tool.pytest.ini_options]
 addopts = "--cov=briefly --cov-report=term-missing"
