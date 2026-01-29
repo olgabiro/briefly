@@ -2,7 +2,7 @@ from datetime import datetime
 from importlib.resources import files
 from typing import Any, List, Optional, Tuple
 
-from fpdf import FPDF, XPos, YPos
+from fpdf import FPDF, YPos
 
 from briefly.model.style import Style, PurpleHaze
 from briefly.rendering.font_spec import FONT_FAMILY, FONTS, ICON_FONT_FAMILY
@@ -60,17 +60,19 @@ class PDF(FPDF):
         self.line(x1, y, x2, y)
         self.ln(_MEDIUM_SPACING)
 
-    def section_title(self, text: str) -> None:
+    def section_title(self, text: str, link: Optional[str] = None) -> None:
+        self.set_y(self.get_y() + _MEDIUM_SPACING)
+        self._break_page_if_needed(content_height=40)
         self.set_font(FONT_FAMILY, "B", SECTION_TITLE_SIZE)
         self.set_text_color(*self.style.section_title_color)
-        self.cell(0, 10, text, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
-        self.set_xy(self.get_x(), self.get_y() + _LARGE_SPACING)
+        self.cell(0, 10, text, link=link, new_y=YPos.NEXT)
+        self.set_y(self.get_y() + _MEDIUM_SPACING)
 
     def summary_card(self, items: List[str], width: int = 80) -> tuple[float, float]:
         padding = _MEDIUM_SPACING
         row_height = 6
         card_height = (len(items) * row_height) + 2 * padding
-        self.__break_page_if_needed(card_height)
+        self._break_page_if_needed(card_height)
         start_x = self.x
         start_y = self.y
 
@@ -201,8 +203,8 @@ class PDF(FPDF):
     #         self.tag(ticket.component)
     #     self.set_y(start_y + height + _MEDIUM_SPACING)
 
-    def __break_page_if_needed(self, component_height: float) -> None:
-        if self.y + component_height >= self.h - self.b_margin:
+    def _break_page_if_needed(self, content_height: float) -> None:
+        if self.y + content_height >= self.h - self.b_margin:
             self.add_page()
 
     # def ticket_card_short(self, ticket: Ticket) -> None:
@@ -327,7 +329,7 @@ class PDF(FPDF):
     def bar_chart(
         self, data: dict[str, float], caption: str, height: float
     ) -> tuple[float, float]:
-        self.__break_page_if_needed(height)
+        self._break_page_if_needed(height)
         start_x, start_y = self.x, self.y
         x, y = self._plot_bar_chart(list(data.values()), height)
         if len(data.keys()) > 12:
@@ -351,7 +353,7 @@ class PDF(FPDF):
         width: float = 70,
     ) -> tuple[float, float]:
         """Generate a pie chart in-memory and insert it into the PDF."""
-        self.__break_page_if_needed(width)
+        self._break_page_if_needed(width)
 
         img_buf = build_pie_chart_bytes(
             list(data.values()), colors=self.style.chart_colors
@@ -458,7 +460,7 @@ class PDF(FPDF):
     def bar_chart_with_limit(
         self, data: dict[str, float], limit: float, caption: str, height: float
     ) -> tuple[float, float]:
-        self.__break_page_if_needed(height)
+        self._break_page_if_needed(height)
         start_x, start_y = self.x, self.y
         x, y = self._plot_bar_chart_with_limit(list(data.values()), height, limit)
         if len(data.keys()) > 12:
