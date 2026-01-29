@@ -57,13 +57,13 @@ def test():
 
     pdf.pie_chart(
         data,
-        width=30,
+        height=30,
         caption="Categories",
     )
 
     pdf.pie_chart(
         data,
-        width=30,
+        height=30,
         caption="Categories",
     )
 

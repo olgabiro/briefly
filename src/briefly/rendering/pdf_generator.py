@@ -338,9 +338,9 @@ class PDF(FPDF):
 
         legend_labels = [f"{key} ({data[key]:.2f})" for key in data.keys()]
         x, y = self.legend(legend_labels, x, y, caption)
-        end_x = self.x
+        end_x = x
         if start_x == self.l_margin:
-            self.set_xy(self.x + _LARGE_SPACING, start_y)
+            self.set_xy(end_x + _LARGE_SPACING, start_y)
         else:
             self.set_xy(self.l_margin, y + _LARGE_SPACING)
         return end_x, y
@@ -349,10 +349,10 @@ class PDF(FPDF):
         self,
         data: dict[str, float],
         caption: str,
-        width: float = 70,
+        height: float = 70,
     ) -> tuple[float, float]:
         """Generate a pie chart in-memory and insert it into the PDF."""
-        self._break_page_if_needed(width)
+        self._break_page_if_needed(height)
 
         img_buf = build_pie_chart_bytes(
             list(data.values()), colors=self.style.chart_colors
@@ -363,20 +363,20 @@ class PDF(FPDF):
 
         start_x = self.x
         x, y = self.x, self.y
-        self.image(img_buf, x=x, y=y, w=width)
-        self.set_xy(x + width, y)
+        self.image(img_buf, x=x, y=y, w=height)
+        self.set_xy(x + height, y)
 
         if len(data.keys()) > 12:
-            legend_x, legend_y = start_x, y + width + _SMALL_SPACING
+            legend_x, legend_y = start_x, y + height + _SMALL_SPACING
         else:
-            legend_x = x + width + _MEDIUM_SPACING
+            legend_x = x + height + _MEDIUM_SPACING
             legend_y = y + _SMALL_SPACING
         legend_labels = [f"{key} ({data[key]})" for key in data.keys()]
         end_x, end_y = self.legend(legend_labels, legend_x, legend_y, caption)
         if x == self.l_margin:
             self.set_xy(end_x + _LARGE_SPACING, y)
         else:
-            self.set_xy(self.l_margin, y + width + _LARGE_SPACING)
+            self.set_xy(self.l_margin, y + height + _LARGE_SPACING)
         return end_x, end_y
 
     def legend(
@@ -394,10 +394,8 @@ class PDF(FPDF):
             if idx % 4 == 0:
                 self.set_xy(next_column_x, legend_start_y)
             color = legend_colors[idx % len(legend_colors)]
-            self.set_font(FONT_FAMILY, "", LABEL_SIZE)
-            label_width = self.get_string_width(label)
-            _, y = self.legend_label(color, label)
-            next_column_x = max(next_column_x, x + int(label_width) + _LARGE_SPACING)
+            x, y = self.legend_label(color, label)
+            next_column_x = max(next_column_x, x + _LARGE_SPACING)
 
             max_y = max(max_y, y)
 
