@@ -124,11 +124,7 @@ class MochaStyle(Style):
         (137, 180, 250),
         (180, 190, 254),
     ]
-    priority_colors: dict[str, Tuple[int, int, int]] = {
-        "High": (243, 139, 168),  # red
-        "Medium": (249, 226, 175),  # yellow
-        "Low": (166, 227, 161),  # green
-    }
+    priority_color: Tuple[int, int, int] = (249, 226, 175)
     card_background: Tuple[int, int, int] = (24, 24, 37)
     header_background: Tuple[int, int, int] = (49, 50, 68)
     table_header_color: Tuple[int, int, int] = (69, 71, 90)
