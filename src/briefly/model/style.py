@@ -35,6 +35,9 @@ class PurpleHaze(Style):
     header_color = (255, 255, 255)
     header_background = (129, 126, 160)
     section_title_color = (255, 255, 255)
+    card_background = (247, 246, 243)
+    table_header_color = (189, 184, 203)
+    table_row_colors = [(255, 255, 255), (247, 246, 243)]
     border_color = (232, 227, 232)
     priority_color = (191, 106, 95)
     disabled_color = (167, 154, 167)

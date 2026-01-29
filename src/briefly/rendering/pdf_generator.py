@@ -94,7 +94,6 @@ class PDF(FPDF):
 
         x = start_x + padding
         y = start_y + padding
-        self.set_text_color(*self.style.card_details_color)
         for text in items:
             self.set_xy(x, y)
             self.cell(width - 2 * padding, row_height, text, align="L")

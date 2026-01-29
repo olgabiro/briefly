@@ -2,7 +2,7 @@ from datetime import date
 
 import pytest
 
-from briefly.model.style import MochaStyle
+from briefly.model.style import PurpleHaze
 from briefly.rendering.pdf_generator import PDF
 
 DARK_BACKGROUND = (38, 33, 43)
@@ -10,7 +10,7 @@ DARK_BACKGROUND = (38, 33, 43)
 
 @pytest.mark.skip(reason="Manually run")
 def test():
-    style = MochaStyle()
+    style = PurpleHaze()
     pdf = PDF(style)
     pdf.add_page()
 
