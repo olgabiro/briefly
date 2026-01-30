@@ -169,7 +169,7 @@ class PDF(FPDF):
         estimate: Optional[int] = None,
         flagged: bool = False,
         link: str | int = 0,
-    ) -> None:
+    ) -> tuple[float, float]:
         width = 77.5
         height = 30
         self._break_page_if_needed(height)
@@ -226,6 +226,7 @@ class PDF(FPDF):
             self.set_xy(start_x + width + _MEDIUM_SPACING, start_y)
         else:
             self.set_y(start_y + height + _MEDIUM_SPACING)
+        return start_x + width, start_y + height
 
     def _task_title(self, title: str, x: float, y: float, link: str | int = 0) -> None:
         self.set_xy(x, y)
