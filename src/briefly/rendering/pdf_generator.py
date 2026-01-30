@@ -23,6 +23,7 @@ _LARGE_SPACING: float = 10
 
 K = TypeVar("K", bound=str)
 
+
 class PDF(FPDF):
     style: Style
 
@@ -57,7 +58,7 @@ class PDF(FPDF):
 
     def divider(self) -> None:
         self.set_draw_color(*self.style.border_color)
-        x1, x2 = MARGIN_SIZE, self.w - MARGIN_SIZE
+        x1, x2 = self.l_margin, self.w - self.r_margin
         y = self.get_y() + _MEDIUM_SPACING
         self.line(x1, y, x2, y)
         self.ln(_MEDIUM_SPACING)
@@ -214,9 +215,9 @@ class PDF(FPDF):
         x, _ = self._priority_icons(priority, flagged, x + 6, y)
 
         story_points_text = f"SP: {estimate or 'N/A'}"
-        x, _ = self._small_label(story_points_text, x + 6, y)
+        x, _ = self._small_label(story_points_text, x, y)
         if flagged:
-            self._flagged_icon(x + 8, y)
+            self._flagged_icon(x + 6, y)
 
         self._task_title(title, text_start_x + 15, start_y + 4, link=link)
 

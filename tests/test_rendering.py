@@ -1,7 +1,12 @@
+from datetime import date
+from unittest.mock import MagicMock, call
+
 import pytest
+from fpdf import XPos, YPos
 
 from briefly.model.style import NotionStyle
 from briefly.rendering.graphs import build_pie_chart_bytes
+from briefly.rendering.icons import DUE_DATE_ICON
 from briefly.rendering.pdf_generator import PDF
 
 
@@ -88,3 +93,40 @@ def test_pie_chart(pdf: PDF, data: dict[str, float]):
     assert pdf.font_size_pt == 10
     assert x == pytest.approx(121, 0.1)
     assert y == 54
+
+
+def test_task_card_with_all_properties(pdf: PDF):
+    task_id = "TEST-1234"
+    status = "In Progress"
+    due_date = date(2025, 1, 3)
+    flagged = True
+    priority = 1
+    estimate = 5
+    title = "Test task"
+    link = "link"
+
+    pdf.cell = MagicMock()
+    pdf.accent_card = MagicMock()
+    pdf._two_line_label = MagicMock()
+    pdf._two_line_label.return_value = 30, 30
+    pdf._priority_icons = MagicMock()
+    pdf._priority_icons.return_value = 30, 30
+    pdf._small_label = MagicMock()
+    pdf._small_label.return_value = 30, 30
+    pdf._flagged_icon = MagicMock()
+    pdf._task_title = MagicMock()
+    pdf.task_card(task_id, title, status, due_date, priority, estimate, flagged, link)
+
+    pdf.accent_card.assert_called_once_with((252, 216, 212), 77.5, 30)
+    pdf._two_line_label.assert_called_once_with(status, 37.5, 35)
+    pdf._priority_icons.assert_called_once_with(priority, flagged, 36, 31)
+    pdf._flagged_icon.assert_called_once_with(36, 31)
+    pdf._task_title.assert_called_once_with(title, 52.5, 29, link=link)
+
+    label_calls = [call("SP: 5", 30, 31), call("03.01.2025", 37.5, 31)]
+    pdf._small_label.assert_has_calls(label_calls, any_order=True)
+    cell_calls = [
+        call(15, 5, task_id, align="R", link=link, new_x=XPos.LEFT, new_y=YPos.NEXT),
+        call(3, 5, DUE_DATE_ICON, align="L"),
+    ]
+    pdf.cell.assert_has_calls(cell_calls, any_order=True)
