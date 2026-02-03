@@ -175,7 +175,7 @@ class PDF(FPDF):
         row_height = 5
 
         stripe_color: tuple[int, int, int] = (
-            self.style.priority_color if flagged else self.style.border_color
+            self.style.priority_color if priority == 1 else self.style.border_color
         )
         self.accent_card(stripe_color, width, height)
 
@@ -351,7 +351,9 @@ class PDF(FPDF):
 
         return x - spacing, start_y + height
 
-    def _draw_gridlines(self, x: float, start_y: float, height: float, width: float) -> None:
+    def _draw_gridlines(
+        self, x: float, start_y: float, height: float, width: float
+    ) -> None:
         self.set_draw_color(*self.style.border_color)
         y = start_y
         while y < start_y + height:

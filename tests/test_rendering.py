@@ -118,7 +118,7 @@ def test_task_card_with_all_properties(pdf: PDF):
     pdf._task_title = MagicMock()
     pdf.task_card(task_id, title, status, due_date, priority, estimate, flagged, link)
 
-    pdf.accent_card.assert_called_once_with((252, 216, 212), 77.5, 30)
+    pdf.accent_card.assert_called_once_with(pdf.style.priority_color, 77.5, 30)
     pdf._two_line_label.assert_called_once_with(status, 37.5, 35)
     pdf._priority_icons.assert_called_once_with(priority, flagged, 36, 31)
     pdf._flagged_icon.assert_called_once_with(36, 31)
@@ -131,6 +131,30 @@ def test_task_card_with_all_properties(pdf: PDF):
         call(3, 5, DUE_DATE_ICON, align="L"),
     ]
     pdf.cell.assert_has_calls(cell_calls, any_order=True)
+
+
+def test_task_card_color_depends_on_priority(pdf: PDF):
+    task_id = "TEST-1234"
+    status = "In Progress"
+    due_date = date(2025, 1, 3)
+    flagged = False
+    estimate = 5
+    title = "Test task"
+    link = "link"
+
+    pdf.accent_card = MagicMock()
+
+    pdf.task_card(task_id, title, status, due_date, 1, estimate, flagged, link)
+    pdf.accent_card.assert_called_with(pdf.style.priority_color, 77.5, 30)
+
+    pdf.task_card(task_id, title, status, due_date, 2, estimate, flagged, link)
+    pdf.accent_card.assert_called_with(pdf.style.border_color, 77.5, 30)
+
+    pdf.task_card(task_id, title, status, due_date, 3, estimate, flagged, link)
+    pdf.accent_card.assert_called_with(pdf.style.border_color, 77.5, 30)
+
+    pdf.task_card(task_id, title, status, due_date, 4, estimate, flagged, link)
+    pdf.accent_card.assert_called_with(pdf.style.border_color, 77.5, 30)
 
 
 def test_footer(pdf: PDF):
