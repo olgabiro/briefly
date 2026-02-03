@@ -30,12 +30,6 @@ dev = [
     "types-fpdf2>=2.8.4"
 ]
 
-[project.scripts]
-lint = "briefly.cli:lint"
-format = "briefly.cli:format"
-typecheck = "briefly.cli:typecheck"
-coverage = "briefly.cli:coverage"
-
 [tool.ruff]
 line-length = 88
 target-version = "py314"
@@ -62,7 +56,6 @@ testpaths = ["tests"]
 [tool.coverage.run]
 omit = [
     "*/__init__.py",
-    "cli.py",
 ]
 branch = true
 source = ["briefly"]
