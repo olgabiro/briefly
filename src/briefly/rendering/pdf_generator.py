@@ -80,9 +80,6 @@ class PDF(FPDF):
         self._break_page_if_needed(card_height)
         start_x, start_y = self.x, self.y
 
-        if start_y + card_height >= self.h - self.b_margin:
-            self.add_page()
-
         self.set_fill_color(*self.style.card_background)
         self.rect(
             start_x,
@@ -250,7 +247,7 @@ class PDF(FPDF):
 
     def _trim_with_ellipsis(self, text: str, column_width: int) -> str:
         ellipsis_chars = "..."
-        trimmed_text = text + ellipsis_chars
+        trimmed_text = text
         string_width = self.get_string_width(trimmed_text)
         words = text.split()
 
@@ -303,7 +300,7 @@ class PDF(FPDF):
         self.set_text_color(*self.style.priority_color)
         self.set_xy(x, y + 0.3)
         self.cell(3, 5, FLAG_ICON, align="R")
-        self.set_xy(self.x, y - 0.3)
+        self.set_xy(self.x, y)
         self.set_text_color(*self.style.disabled_color)
 
     def _plot_bar_chart(
@@ -327,13 +324,7 @@ class PDF(FPDF):
         width = x + len(values) * (bar_width + spacing) + spacing
         max_value = max(values) if values else 0
 
-        self.set_draw_color(*self.style.border_color)
-        self.line(x, start_y, width, start_y)
-        self.line(x, start_y + 5, width, start_y + 5)
-        self.line(x, start_y + 10, width, start_y + 10)
-        self.line(x, start_y + 15, width, start_y + 15)
-        self.line(x, start_y + 20, width, start_y + 20)
-        self.line(x, start_y + 25, width, start_y + 25)
+        self._draw_gridlines(x, start_y, height, width)
 
         x += spacing
 
@@ -359,6 +350,13 @@ class PDF(FPDF):
             x += bar_width + spacing
 
         return x - spacing, start_y + height
+
+    def _draw_gridlines(self, x: float, start_y: float, height: float, width: float) -> None:
+        self.set_draw_color(*self.style.border_color)
+        y = start_y
+        while y < start_y + height:
+            self.line(x, y, width, y)
+            y += 5
 
     def bar_chart(
         self,
