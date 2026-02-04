@@ -5,10 +5,10 @@ from typing import Any, List, Optional, Tuple, TypeVar, Mapping
 from fpdf import FPDF, YPos, XPos
 from fpdf.enums import MethodReturnValue
 
-from briefly.model.style import Style, PurpleHaze
 from briefly.rendering.font_spec import FONT_FAMILY, FONTS, ICON_FONT_FAMILY
 from briefly.rendering.graphs import build_pie_chart_bytes
 from briefly.rendering.icons import FLAG_ICON, DUE_DATE_ICON, PRIORITY_ICON
+from briefly.style import Style, PURPLE_HAZE
 
 HEADER_SIZE: int = 20
 SECTION_TITLE_SIZE: int = 13
@@ -27,7 +27,7 @@ K = TypeVar("K", bound=str)
 class PDF(FPDF):
     style: Style
 
-    def __init__(self, style: Style = PurpleHaze(), **kwargs: Any) -> None:
+    def __init__(self, style: Style = PURPLE_HAZE, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.style = style
         self.set_margin(MARGIN_SIZE)

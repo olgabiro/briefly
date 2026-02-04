@@ -2,7 +2,7 @@ from datetime import date
 
 import pytest
 
-from briefly.model.style import PurpleHaze
+from briefly.style import PurpleHaze
 from briefly.rendering.pdf_generator import PDF
 
 DARK_BACKGROUND = (38, 33, 43)

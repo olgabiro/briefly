@@ -5,7 +5,7 @@ import pytest
 from fpdf import XPos, YPos
 from fpdf.enums import MethodReturnValue
 
-from briefly.model.style import NotionStyle
+from briefly.style import NOTION
 from briefly.rendering.graphs import build_pie_chart_bytes
 from briefly.rendering.icons import DUE_DATE_ICON, FLAG_ICON, PRIORITY_ICON
 from briefly.rendering.pdf_generator import PDF
@@ -13,7 +13,7 @@ from briefly.rendering.pdf_generator import PDF
 
 @pytest.fixture
 def pdf() -> PDF:
-    pdf = PDF(NotionStyle())
+    pdf = PDF(NOTION)
     pdf.add_page()
     return pdf
 

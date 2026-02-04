@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from briefly.model.style import MochaStyle
+from briefly.style import MochaStyle
 from briefly.rendering.pdf_generator import PDF
 
 TEST_DIRECTORY = Path(__file__).parent
