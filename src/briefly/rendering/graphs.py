@@ -3,6 +3,8 @@ from typing import Optional
 
 from matplotlib import pyplot as plt
 
+from briefly.style import Color
+
 NOTION_CHART_COLORS = [
     (155, 207, 87),  # green
     (246, 199, 68),  # yellow
@@ -16,7 +18,7 @@ NOTION_CHART_COLORS = [
 def build_pie_chart_bytes(
     values: list[float],
     size: float = 35,
-    colors: Optional[list[tuple[int, int, int]]] = None,
+    colors: Optional[list[Color]] = None,
 ) -> Optional[BytesIO]:
     """
     Return a PNG image as bytes for a pie chart.

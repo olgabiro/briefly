@@ -1,4 +1,14 @@
-from dataclasses import dataclass, fields
+"""
+Styles used by the PDF generator.
+
+Pre-defined styles:
+ - **PURPLE_HAZE** (default): Light theme with purple color scheme
+ - **NOTION**: Light theme inspired by Notion design
+ - **LATTE**: Light theme using Catpuccin's Latte color scheme
+ - **MOCHA**: Dark theme using Catpuccin's Mocha color scheme
+"""
+
+from dataclasses import dataclass, fields, field
 from typing import Tuple
 
 STRIPE_DARK = (10, 37, 64)
@@ -28,7 +38,24 @@ def _validate_color(name: str, c: Color) -> None:
 
 @dataclass(frozen=True)
 class Style:
-    background_color: Color
+    """
+    Defines the visual style of the generated PDF report.
+
+    :ivar background_color(Color): The background color of the report
+    :ivar chart_colors: List of colors to use for charts
+    :ivar priority_color: Color used to highlight tasks with priority 1
+    :ivar card_background: Background color for summary cards
+    :ivar header_background: Background color for the main title
+    :ivar table_header_color: Color of table headers
+    :ivar table_row_colors: List of colors to use for alternating table rows
+    :ivar font_color: Color of the main text
+    :ivar section_title_color: Color of section titles
+    :ivar border_color: Color of card borders, table borders, and chart gridlines
+    :ivar header_color: Color of the main title
+    :ivar disabled_color: Color of disabled elements (i.e., flagged task cards)
+    """
+
+    background_color: Color = field(metadata={"doc": "Background color of the report"})
     chart_colors: list[Color]
     priority_color: Color
     card_background: Color

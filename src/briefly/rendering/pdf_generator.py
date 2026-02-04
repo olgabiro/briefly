@@ -8,7 +8,7 @@ from fpdf.enums import MethodReturnValue
 from briefly.rendering.font_spec import FONT_FAMILY, FONTS, ICON_FONT_FAMILY
 from briefly.rendering.graphs import build_pie_chart_bytes
 from briefly.rendering.icons import FLAG_ICON, DUE_DATE_ICON, PRIORITY_ICON
-from briefly.style import Style, PURPLE_HAZE
+from briefly.style import Style, PURPLE_HAZE, Color
 
 HEADER_SIZE: int = 20
 SECTION_TITLE_SIZE: int = 13
@@ -25,6 +25,14 @@ K = TypeVar("K", bound=str)
 
 
 class PDF(FPDF):
+    """
+    The pdf report generator.
+
+    Creates an A4 PDF with margin of 25mm on all sides. The default used font is Inter.
+
+    :param style: The style to use for the report. The default value is `Style.PURPLE_HAZE`.
+    """
+
     style: Style
 
     def __init__(self, style: Style = PURPLE_HAZE, **kwargs: Any) -> None:
@@ -33,15 +41,18 @@ class PDF(FPDF):
         self.set_margin(MARGIN_SIZE)
         self.set_page_background(style.background_color)
         self.generation_time = datetime.now()
-        self.setup_fonts()
+        self._setup_fonts()
 
-    def setup_fonts(self) -> None:
+    def _setup_fonts(self) -> None:
         font_pkg = files("briefly.fonts")
         for font in FONTS:
             self.add_font(font.family, font.style, str(font_pkg / font.filename))
         self.set_font(FONT_FAMILY, "", TEXT_SIZE)
 
     def footer(self) -> None:
+        """
+        Creates the footer with the report generation time and page number.
+        """
         self.set_y(-15)
         self.set_font(FONT_FAMILY, "I", 7)
         time_str: str = self.generation_time.strftime("%d.%m.%Y %H:%M:%S")
@@ -49,6 +60,10 @@ class PDF(FPDF):
         self.cell(0, 10, f"Page {self.page_no()}", align="R")
 
     def main_title(self, text: str) -> None:
+        """
+        Creates the main title (header) of the report.
+        :param text: The text to display in the header.
+        """
         self.set_font(FONT_FAMILY, "B", size=HEADER_SIZE)
         self.set_fill_color(*self.style.header_background)
         self.set_text_color(*self.style.header_color)
@@ -57,6 +72,9 @@ class PDF(FPDF):
         self.set_y(self.get_y() + _LARGE_SPACING)
 
     def divider(self) -> None:
+        """
+        Creates a simple divider line (using the border color).
+        """
         self.set_draw_color(*self.style.border_color)
         x1, x2 = self.l_margin, self.w - self.r_margin
         y = self.get_y() + _MEDIUM_SPACING
@@ -64,6 +82,11 @@ class PDF(FPDF):
         self.ln(_MEDIUM_SPACING)
 
     def section_title(self, text: str, link: Optional[str] = None) -> None:
+        """
+        Creates a section title.
+        :param text: The text to display in the section title.
+        :param link: The link to navigate to when clicking on the section title.
+        """
         self.set_y(self.get_y() + _MEDIUM_SPACING)
         self._break_page_if_needed(content_height=40)
         self.set_font(FONT_FAMILY, "B", SECTION_TITLE_SIZE)
@@ -74,6 +97,16 @@ class PDF(FPDF):
         self.set_y(self.get_y() + _MEDIUM_SPACING)
 
     def summary_card(self, items: List[str], width: int = 80) -> tuple[float, float]:
+        """
+        Creates a summary card with the provided lines of text.
+        The height of the card is automatically calculated based on the number of lines.
+
+        After the rendering, the caret is positioned to the right of the card (with a reasonable margin), or below it if the card ends at the right margin of the page.
+
+        :param items: The lines of text to include on the summary card.
+        :param width: The width of the card.
+        :return: The position of the right bottom corner of the summary card.
+        """
         padding = _MEDIUM_SPACING
         row_height = 6
         card_height = (len(items) * row_height) + 2 * padding
@@ -112,6 +145,14 @@ class PDF(FPDF):
         rows: list[list[str]],
         col_widths: list[int],
     ) -> None:
+        """
+        Creates a styled table with the provided headers and rows.
+        The rows have alternating background colors, defined by the `table_row_colors` style property.
+
+        :param headers: The titles of the columns.
+        :param rows: The rows of data to include in the table.
+        :param col_widths: The widths of the columns.
+        """
         self.set_font(FONT_FAMILY, "B", TEXT_SIZE)
         self.set_fill_color(*self.style.table_header_color)
         self.set_text_color(*self.style.font_color)
@@ -134,8 +175,17 @@ class PDF(FPDF):
         self.set_fill_color(*self.style.card_background)
         self.set_y(self.get_y() + _LARGE_SPACING)
 
-    def tag(self, text: str) -> Tuple[float, float]:
-        bg = self.style.background_color
+    def tag(self, text: str, color: Optional[Color] = None) -> Tuple[float, float]:
+        """
+        Creates a tag (rounded corners) with the provided text and color.
+
+        After the rendering, the caret is positioned to the right of the tag.
+
+        :param text: The text to display in the tag.
+        :param color: The background color of the tag. By default the `background_color` style property is used.
+        :return: The position of the right bottom corner of the tag.
+        """
+        bg = color or self.style.background_color
         self.set_font(FONT_FAMILY, "", LABEL_SIZE)
         self.set_text_color(*self.style.font_color)
 
@@ -167,6 +217,25 @@ class PDF(FPDF):
         flagged: bool = False,
         link: str | int = 0,
     ) -> tuple[float, float]:
+        """
+        Creates a task card with the provided information. The card is designed to fit to a 2-column grid.
+        It automatically creates a new page if the card does not fit on the current page.
+
+        The card has an accent stripe on the left that is colored for priority 1 tasks.
+        If a task is marked as flagged, the card is greyed out, with a flag icon indicator.
+
+        After the rendering, the caret is positioned to the right column (if it started at the left margin), or the left column below (with a reasonable margin).
+
+        :param task_id: The id/key of the task
+        :param title: The title of the task
+        :param status: The status of the task, e.g. "In Progress"
+        :param due_date: The due date of the task, if any.
+        :param priority: The priority of the task. Supported values are between 1 (highest priority) and 4 (lowest priority).
+        :param estimate: The story points estimate of the task, if any.
+        :param flagged: Whether the task is flagged.
+        :param link: The link to the task details page.
+        :return: The position of the right bottom corner of the task card.
+        """
         width = 77.5
         height = 30
         self._break_page_if_needed(height)
@@ -174,7 +243,7 @@ class PDF(FPDF):
         start_x, start_y = self.x, self.y
         row_height = 5
 
-        stripe_color: tuple[int, int, int] = (
+        stripe_color: Color = (
             self.style.priority_color if priority == 1 else self.style.border_color
         )
         self.accent_card(stripe_color, width, height)
@@ -367,6 +436,18 @@ class PDF(FPDF):
         height: float = 30,
         wide: bool = False,
     ) -> tuple[float, float]:
+        """
+        Creates a bar chart with the provided data. The chart is designed to fit to a 2-column grid.
+        The chart is displayed with a legend, consisting of provided labels and values.
+
+        It automatically creates a new page if the chart does not fit on the current page.
+
+        :param data: The data to display in the bar chart, as a mapping of labels to values. The ideal data size is <= 12, for more data points consider using the wide chart or a pie chart.
+        :param caption: The caption of the chart, displayed above the legend.
+        :param height: The height of the chart.
+        :param wide: When set to True, the chart is displayed to fit to the available page width.
+        :return:
+        """
         if not data.keys():
             return self.x, self.y
 
@@ -387,7 +468,7 @@ class PDF(FPDF):
         legend_start_y = start_y + _SMALL_SPACING if height >= 30 else start_y - 1
 
         legend_labels = [f"{key} ({data[key]:.2f})" for key in sorted_labels]
-        x, y = self.legend(legend_labels, legend_start_x, legend_start_y, caption)
+        x, y = self._legend(legend_labels, legend_start_x, legend_start_y, caption)
         end_x = x
         if start_x == self.l_margin:
             self.set_xy(end_x + _LARGE_SPACING, start_y)
@@ -399,9 +480,19 @@ class PDF(FPDF):
         self,
         data: Mapping[K, float],
         caption: str,
-        height: float = 70,
+        height: float = 30,
     ) -> tuple[float, float]:
-        """Generate a pie chart in-memory and insert it into the PDF."""
+        """
+        Creates a pie chart with the provided data. The chart is designed to fit to a 2-column grid.
+        The chart is displayed with a legend, consisting of provided labels and values.
+
+        It automatically creates a new page if the chart does not fit on the current page.
+
+        :param data: The data to display in the bar chart, as a mapping of labels to values.
+        :param caption: The caption of the chart, displayed above the legend.
+        :param height: The height of the chart.
+        :return:
+        """
         self._break_page_if_needed(height)
 
         self.set_x(self.x - _SMALL_SPACING)
@@ -423,14 +514,14 @@ class PDF(FPDF):
             legend_x = x + height + _MEDIUM_SPACING
             legend_y = y + _SMALL_SPACING
         legend_labels = [f"{key} ({data[key]})" for key in data.keys()]
-        end_x, end_y = self.legend(legend_labels, legend_x, legend_y, caption)
+        end_x, end_y = self._legend(legend_labels, legend_x, legend_y, caption)
         if x <= self.l_margin:
             self.set_xy(end_x + _LARGE_SPACING, y)
         else:
             self.set_xy(self.l_margin, y + height + _LARGE_SPACING)
         return end_x, end_y
 
-    def legend(
+    def _legend(
         self, labels: list[str], x: float, y: float, caption: str
     ) -> tuple[float, float]:
         self.set_xy(x, y)
@@ -452,9 +543,7 @@ class PDF(FPDF):
 
         return next_column_x, max_y
 
-    def legend_label(
-        self, color: tuple[int, int, int], label: str
-    ) -> tuple[float, float]:
+    def legend_label(self, color: Color, label: str) -> tuple[float, float]:
         """
         Generates a legend label with a colored dot. The label object has the height of 5mm.
         :param color: the color of the dot
@@ -473,9 +562,13 @@ class PDF(FPDF):
         self.set_x(start_x)
         return start_x + text_length, self.y
 
-    def accent_card(
-        self, accent_color: tuple[int, int, int], width: float, height: float
-    ) -> None:
+    def accent_card(self, accent_color: Color, width: float, height: float) -> None:
+        """
+        Creates a card with an accent color stripe.
+        :param accent_color: The accent color of the stripe.
+        :param width: The width of the card.
+        :param height: The height of the card.
+        """
         self.set_draw_color(*self.style.border_color)
         self.rect(
             self.x,
@@ -499,8 +592,16 @@ class PDF(FPDF):
         )
 
     def bar_chart_with_limit(
-        self, data: dict[str, float], limit: float, caption: str, height: float
+        self, data: dict[str, float], limit: float, caption: str, height: float = 30
     ) -> tuple[float, float]:
+        """
+        Creates a bar chart with the provided data and a line signifying a specific limit. The chart is designed to fit to a 2-column grid.
+        :param data: The data to display in the bar chart, as a mapping of labels to values.
+        :param limit: The limit to be displayed as a horizontal line on the chart.
+        :param caption: The caption of the chart, displayed above the legend.
+        :param height: The height of the chart.
+        :return: The position of the bottom right corner of the chart.
+        """
         self._break_page_if_needed(height)
         start_x, start_y = self.x, self.y
         x, y = self._plot_bar_chart_with_limit(list(data.values()), height, limit)
@@ -510,7 +611,7 @@ class PDF(FPDF):
             x, y = x + _SMALL_SPACING, start_y + _SMALL_SPACING
 
         legend_labels = [f"{key} ({data[key]:.2f})" for key in data.keys()]
-        x, y = self.legend(legend_labels, x, y, caption)
+        x, y = self._legend(legend_labels, x, y, caption)
         end_x = self.x
         if start_x == self.l_margin:
             self.set_xy(self.x + _LARGE_SPACING, start_y)
