@@ -2,16 +2,15 @@ from datetime import date
 
 import pytest
 
-from briefly.style import PurpleHaze
 from briefly.rendering.pdf_generator import PDF
+from briefly.style import PURPLE_HAZE
 
 DARK_BACKGROUND = (38, 33, 43)
 
 
 @pytest.mark.skip(reason="Manually run")
 def test():
-    style = PurpleHaze()
-    pdf = PDF(style)
+    pdf = PDF(PURPLE_HAZE)
     pdf.add_page()
 
     pdf.main_title("JIRA Summary Test")
@@ -91,7 +90,7 @@ def test():
         "cat8": 120,
     }
 
-    pdf.bar_chart(data, caption="Categories", height=30)
+    pdf.bar_chart(data, caption="Categories", height=30, limit=10)
 
     pdf.pie_chart(
         data,

@@ -182,7 +182,7 @@ class PDF(FPDF):
         After the rendering, the caret is positioned to the right of the tag.
 
         :param text: The text to display in the tag.
-        :param color: The background color of the tag. By default the `background_color` style property is used.
+        :param color: The background color of the tag. By default, the `background_color` style property is used.
         :return: The position of the right bottom corner of the tag.
         """
         bg = color or self.style.background_color
@@ -373,7 +373,11 @@ class PDF(FPDF):
         self.set_text_color(*self.style.disabled_color)
 
     def _plot_bar_chart(
-        self, values: list[float], height: float, max_width: Optional[float] = None
+        self,
+        values: list[float],
+        height: float,
+        max_width: Optional[float] = None,
+        limit: Optional[float] = None,
     ) -> tuple[float, float]:
         if not values:
             return self.x, self.y
@@ -381,7 +385,7 @@ class PDF(FPDF):
         spacing: float = 2
         bar_width: float = 3
         x = self.x
-        start_y = self.y
+        start_x, start_y = self.x, self.y
 
         if max_width is not None:
             total_bars_width = len(values) * bar_width + (len(values) - 1) * spacing
@@ -392,6 +396,8 @@ class PDF(FPDF):
 
         width = x + len(values) * (bar_width + spacing) + spacing
         max_value = max(values) if values else 0
+        if limit is not None:
+            max_value = max(max_value, limit)
 
         self._draw_gridlines(x, start_y, height, width)
 
@@ -418,6 +424,13 @@ class PDF(FPDF):
                     self.rect(x, y, bar_width, bar_height, style="F")
             x += bar_width + spacing
 
+        if limit is not None:
+            limit_line_y = start_y + height - height * limit / max_value
+            self.set_draw_color(*self.style.priority_color)
+            self.set_line_width(0.4)
+            self.line(start_x, limit_line_y, x - spacing, limit_line_y)
+            self.set_line_width(0.2)
+
         return x - spacing, start_y + height
 
     def _draw_gridlines(
@@ -435,6 +448,7 @@ class PDF(FPDF):
         caption: str,
         height: float = 30,
         wide: bool = False,
+        limit: Optional[float] = None,
     ) -> tuple[float, float]:
         """
         Creates a bar chart with the provided data. The chart is designed to fit to a 2-column grid.
@@ -446,6 +460,7 @@ class PDF(FPDF):
         :param caption: The caption of the chart, displayed above the legend.
         :param height: The height of the chart.
         :param wide: When set to True, the chart is displayed to fit to the available page width.
+        :param limit: Optional limit to be displayed as a horizontal line on the chart.
         :return:
         """
         if not data.keys():
@@ -458,7 +473,7 @@ class PDF(FPDF):
         values = [data[label] for label in sorted_labels]
         chart_width = 40 if wide else 28
 
-        x, y = self._plot_bar_chart(values, height, chart_width)
+        x, y = self._plot_bar_chart(values, height, chart_width, limit)
         if len(data.keys()) > 12:
             x, y = start_x, y + _SMALL_SPACING
         else:
@@ -590,67 +605,3 @@ class PDF(FPDF):
             round_corners=True,
             corner_radius=2.2,
         )
-
-    def bar_chart_with_limit(
-        self, data: dict[str, float], limit: float, caption: str, height: float = 30
-    ) -> tuple[float, float]:
-        """
-        Creates a bar chart with the provided data and a line signifying a specific limit. The chart is designed to fit to a 2-column grid.
-        :param data: The data to display in the bar chart, as a mapping of labels to values.
-        :param limit: The limit to be displayed as a horizontal line on the chart.
-        :param caption: The caption of the chart, displayed above the legend.
-        :param height: The height of the chart.
-        :return: The position of the bottom right corner of the chart.
-        """
-        self._break_page_if_needed(height)
-        start_x, start_y = self.x, self.y
-        x, y = self._plot_bar_chart_with_limit(list(data.values()), height, limit)
-        if len(data.keys()) > 12:
-            x, y = start_x, y + _SMALL_SPACING
-        else:
-            x, y = x + _SMALL_SPACING, start_y + _SMALL_SPACING
-
-        legend_labels = [f"{key} ({data[key]:.2f})" for key in data.keys()]
-        x, y = self._legend(legend_labels, x, y, caption)
-        end_x = self.x
-        if start_x == self.l_margin:
-            self.set_xy(self.x + _LARGE_SPACING, start_y)
-        else:
-            self.set_xy(self.l_margin, y + _LARGE_SPACING)
-        return end_x, y
-
-    def _plot_bar_chart_with_limit(
-        self, values: list[float], height: float, limit: float
-    ) -> tuple[float, float]:
-        spacing = 2
-        bar_width = 3
-        start_x = self.x
-        start_y = self.y
-        max_value = max(max(values), limit) if values else 0
-        x = start_x + spacing
-
-        for index, value in enumerate(values):
-            if value > 0:
-                self.set_fill_color(
-                    *self.style.chart_colors[index % len(self.style.chart_colors)]
-                )
-                bar_height = height * value / max_value
-                y = start_y + height - bar_height
-                if bar_height > 1.5:
-                    self.rect(
-                        x,
-                        y,
-                        bar_width,
-                        bar_height,
-                        style="F",
-                        round_corners=True,
-                        corner_radius=1.5,
-                    )
-            x += bar_width + spacing
-
-        limit_line_y = start_y + height - height * limit / max_value
-        self.set_draw_color(*self.style.priority_color)
-        self.set_line_width(0.4)
-        self.line(start_x, limit_line_y, x - spacing, limit_line_y)
-        self.set_line_width(0.2)
-        return x - spacing, start_y + height
