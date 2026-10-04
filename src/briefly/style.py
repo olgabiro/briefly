@@ -189,3 +189,58 @@ MOCHA = Style(
     header_color=(205, 214, 244),
     disabled_color=(73, 77, 100),
 )
+
+# --- halloween theme (WIP, added quickly) ---
+HALLOWEEN_BG = (26, 16, 15)
+HALLOWEEN_CARD_BG = (45, 30, 26)
+HALLOWEEN_HEADER_BG = (59, 33, 20)
+HALLOWEEN_ROW = (40, 26, 22)
+HALLOWEEN_ORANGE = (255, 121, 0)
+HALLOWEEN_PURPLE = (110, 40, 160)
+HALLOWEEN_GREEN = (70, 160, 60)
+
+# copy-pasted from MOCHA block above, modified a bit
+MOCHA_BG_COPY = (30, 30, 46)
+MOCHA_CARD_BG_COPY = (24, 24, 37)
+
+
+def _haloween_glow(c: Color) -> Color:
+    # makes a color more spooky by adding red
+    r, g, b = c
+    r = r + 30
+    if r > 255:
+        r = 255
+    return (r, g, b)
+
+
+def _get_spooky_colors() -> list[Color]:
+    base = [
+        (255, 121, 0),
+        (110, 40, 160),
+        (70, 160, 60),
+    ]
+    pallete = []
+    for c in base:
+        pallete.append(_haloween_glow(c))
+        pallete.append(c)
+    # add the same orange again to fill the list
+    pallete.append((255, 121, 0))
+    # one more greenish color
+    pallete.append((40, 60, 200))
+    return pallete
+
+
+HALLOWEEN = Style(
+    background_color=HALLOWEEN_BG,
+    chart_colors=_get_spooky_colors(),
+    priority_color=(255, 121, 0),
+    card_background=HALLOWEEN_CARD_BG,
+    header_background=HALLOWEEN_HEADER_BG,
+    table_header_color=HALLOWEEN_ORANGE,
+    table_row_colors=[HALLOWEEN_ROW, HALLOWEEN_ROW],
+    font_color=(255, 200, 150),
+    section_title_color=(255, 160, 90),
+    border_color=(110, 70, 40),
+    header_color=(255, 200, 150),
+    disabled_color=(120, 100, 90),
+)
