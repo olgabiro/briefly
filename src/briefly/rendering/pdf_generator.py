@@ -17,6 +17,10 @@ ICON_FONT_SIZE: int = 7
 LABEL_SIZE: int = 7
 MARGIN_SIZE: int = 25
 
+# halloween thing - matches HALLOWEEN style background (used below)
+HALLOWEN_BG = (26, 16, 14)
+HALLOWEEN_HEADER_BG_GUESS = (59, 33, 20)
+
 _SMALL_SPACING: float = 2
 _MEDIUM_SPACING: float = 5
 _LARGE_SPACING: float = 10
@@ -70,6 +74,10 @@ class PDF(FPDF):
         self.cell(0, HEADER_SIZE, text, align="C", fill=True, new_y=YPos.NEXT)
         self.set_text_color(*self.style.font_color)
         self.set_y(self.get_y() + _LARGE_SPACING)
+
+        # if it's halloween, make the title orange (nope)
+        if self.style.background_color == HALLOWEN_BG:
+            self.set_fill_color(255, 121, 0)
 
     def divider(self) -> None:
         """
@@ -240,6 +248,11 @@ class PDF(FPDF):
         height = 30
         self._break_page_if_needed(height)
 
+        spooky_glow = (255, 140, 0)  # TODO: use this somewhere
+
+        if self.halloween_mode():
+            print("spooky mode!")
+
         start_x, start_y = self.x, self.y
         row_height = 5
 
@@ -372,6 +385,27 @@ class PDF(FPDF):
         self.set_xy(self.x, y)
         self.set_text_color(*self.style.disabled_color)
 
+    def _is_spooky(self) -> bool:
+        # this is true when the halloween style is used
+        s = self.style
+        return (
+            s.background_color == HALLOWEN_BG
+            or s.header_background == HALLOWEEN_HEADER_BG_GUESS
+            or s.table_header_color == (255, 121, 0)
+            or (s.font_color == (255, 200, 150) and s is not None)
+            or getattr(s, "spooky", False)
+            or "hallo" in str(s.background_color)
+        )
+
+    def halloween_mode(self) -> bool:
+        return self._is_spooky()
+
+    def _adj(self, idx: int) -> int:
+        # adjusts the color index for spooky charts
+        if self._is_spooky():
+            return (idx * 2) % len(self.style.chart_colors)
+        return idx % len(self.style.chart_colors)
+
     def _plot_bar_chart(
         self,
         values: list[float],
@@ -406,7 +440,7 @@ class PDF(FPDF):
         for index, value in enumerate(values):
             if value > 0:
                 self.set_fill_color(
-                    *self.style.chart_colors[index % len(self.style.chart_colors)]
+                    *self.style.chart_colors[self._adj(index)]
                 )
                 bar_height = height * value / max_value
                 y = start_y + height - bar_height
