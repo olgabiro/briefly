@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from briefly.style import MochaStyle
 from briefly.rendering.pdf_generator import PDF
+from briefly.style import MochaStyle
 
 TEST_DIRECTORY = Path(__file__).parent
 REPORT_PATH = TEST_DIRECTORY / "output/sample_report.pdf"
@@ -12,7 +12,7 @@ def generate_report(report_path: Path) -> None:
     pdf.add_page()
     pdf.main_title("Sample Report")
     pdf.section_title("Introduction")
-    x, y = pdf.summary_card(
+    x, _ = pdf.summary_card(
         [
             "This is a sample report generated using FPDF.",
             "It demonstrates basic PDF generation.",

@@ -9,8 +9,7 @@ Pre-defined styles:
  - **HALLOWEEN**: Dark theme with an orange/purple Halloween color scheme
 """
 
-from dataclasses import dataclass, fields, field
-from typing import Tuple
+from dataclasses import dataclass, field, fields
 
 STRIPE_DARK = (10, 37, 64)
 STRIPE_LIGHT_BG = (246, 249, 252)
@@ -24,7 +23,7 @@ MINIMALIST_TEXT_COLOR = (255, 255, 255)
 MINIMALIST_TEXT_COLOR_GRAY = (45, 62, 80)
 MINIMALIST_ROW_ALT = (247, 249, 252)
 
-Color = Tuple[int, int, int]
+Color = tuple[int, int, int]
 
 
 def _validate_color(name: str, c: Color) -> None:

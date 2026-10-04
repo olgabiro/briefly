@@ -1,14 +1,14 @@
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 from unittest.mock import MagicMock, call
 
 import pytest
 from fpdf import XPos, YPos
 from fpdf.enums import MethodReturnValue
 
-from briefly.style import NOTION
 from briefly.rendering.graphs import build_pie_chart_bytes
 from briefly.rendering.icons import DUE_DATE_ICON, FLAG_ICON, PRIORITY_ICON
 from briefly.rendering.pdf_generator import PDF
+from briefly.style import NOTION
 
 
 @pytest.fixture
@@ -158,7 +158,7 @@ def test_task_card_color_depends_on_priority(pdf: PDF):
 
 
 def test_footer(pdf: PDF):
-    pdf.generation_time = datetime(2025, 1, 2, 15, 30, 45)
+    pdf.generation_time = datetime(2025, 1, 2, 15, 30, 45, tzinfo=UTC)
     pdf.cell = MagicMock()
     pdf.footer()
 

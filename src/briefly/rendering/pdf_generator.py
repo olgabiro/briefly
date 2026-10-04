@@ -1,14 +1,15 @@
-from datetime import datetime, date
+from collections.abc import Mapping
+from datetime import UTC, date, datetime
 from importlib.resources import files
-from typing import Any, List, Optional, Tuple, TypeVar, Mapping
+from typing import Any, TypeVar
 
-from fpdf import FPDF, YPos, XPos
+from fpdf import FPDF, XPos, YPos
 from fpdf.enums import MethodReturnValue
 
 from briefly.rendering.font_spec import FONT_FAMILY, FONTS, ICON_FONT_FAMILY
 from briefly.rendering.graphs import build_pie_chart_bytes
-from briefly.rendering.icons import FLAG_ICON, DUE_DATE_ICON, PRIORITY_ICON
-from briefly.style import Style, PURPLE_HAZE, Color
+from briefly.rendering.icons import DUE_DATE_ICON, FLAG_ICON, PRIORITY_ICON
+from briefly.style import PURPLE_HAZE, Color, Style
 
 HEADER_SIZE: int = 20
 SECTION_TITLE_SIZE: int = 13
@@ -40,7 +41,7 @@ class PDF(FPDF):
         self.style = style
         self.set_margin(MARGIN_SIZE)
         self.set_page_background(style.background_color)
-        self.generation_time = datetime.now()
+        self.generation_time = datetime.now(tz=UTC).astimezone()
         self._setup_fonts()
 
     def _setup_fonts(self) -> None:
@@ -81,7 +82,7 @@ class PDF(FPDF):
         self.line(x1, y, x2, y)
         self.ln(_MEDIUM_SPACING)
 
-    def section_title(self, text: str, link: Optional[str] = None) -> None:
+    def section_title(self, text: str, link: str | None = None) -> None:
         """
         Creates a section title.
         :param text: The text to display in the section title.
@@ -96,7 +97,7 @@ class PDF(FPDF):
         self.set_text_color(*self.style.font_color)
         self.set_y(self.get_y() + _MEDIUM_SPACING)
 
-    def summary_card(self, items: List[str], width: int = 80) -> tuple[float, float]:
+    def summary_card(self, items: list[str], width: int = 80) -> tuple[float, float]:
         """
         Creates a summary card with the provided lines of text.
         The height of the card is automatically calculated based on the number of lines.
@@ -175,7 +176,7 @@ class PDF(FPDF):
         self.set_fill_color(*self.style.card_background)
         self.set_y(self.get_y() + _LARGE_SPACING)
 
-    def tag(self, text: str, color: Optional[Color] = None) -> Tuple[float, float]:
+    def tag(self, text: str, color: Color | None = None) -> tuple[float, float]:
         """
         Creates a tag (rounded corners) with the provided text and color.
 
@@ -211,9 +212,9 @@ class PDF(FPDF):
         task_id: str,
         title: str,
         status: str,
-        due_date: Optional[date] = None,
-        priority: Optional[int] = None,
-        estimate: Optional[int] = None,
+        due_date: date | None = None,
+        priority: int | None = None,
+        estimate: int | None = None,
         flagged: bool = False,
         link: str | int = 0,
     ) -> tuple[float, float]:
@@ -329,10 +330,10 @@ class PDF(FPDF):
 
     def _priority_icons(
         self,
-        priority: Optional[int],
+        priority: int | None,
         flagged: bool = False,
-        x: Optional[float] = None,
-        y: Optional[float] = None,
+        x: float | None = None,
+        y: float | None = None,
     ) -> tuple[float, float]:
         x, y = x or self.x, y or self.y
         if priority:
@@ -376,8 +377,8 @@ class PDF(FPDF):
         self,
         values: list[float],
         height: float,
-        max_width: Optional[float] = None,
-        limit: Optional[float] = None,
+        max_width: float | None = None,
+        limit: float | None = None,
     ) -> tuple[float, float]:
         if not values:
             return self.x, self.y
@@ -448,7 +449,7 @@ class PDF(FPDF):
         caption: str,
         height: float = 30,
         wide: bool = False,
-        limit: Optional[float] = None,
+        limit: float | None = None,
     ) -> tuple[float, float]:
         """
         Creates a bar chart with the provided data. The chart is designed to fit to a 2-column grid.
@@ -528,7 +529,7 @@ class PDF(FPDF):
         else:
             legend_x = x + height + _MEDIUM_SPACING
             legend_y = y + _SMALL_SPACING
-        legend_labels = [f"{key} ({data[key]})" for key in data.keys()]
+        legend_labels = [f"{key} ({data[key]})" for key in data]
         end_x, end_y = self._legend(legend_labels, legend_x, legend_y, caption)
         if x <= self.l_margin:
             self.set_xy(end_x + _LARGE_SPACING, y)

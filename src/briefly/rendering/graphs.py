@@ -1,5 +1,4 @@
 from io import BytesIO
-from typing import Optional
 
 from matplotlib import pyplot as plt
 
@@ -18,8 +17,8 @@ NOTION_CHART_COLORS = [
 def build_pie_chart_bytes(
     values: list[float],
     size: float = 35,
-    colors: Optional[list[Color]] = None,
-) -> Optional[BytesIO]:
+    colors: list[Color] | None = None,
+) -> BytesIO | None:
     """
     Return a PNG image as bytes for a pie chart.
     :param values: The values to plot
