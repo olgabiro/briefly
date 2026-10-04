@@ -6,10 +6,10 @@ Pre-defined styles:
  - **NOTION**: Light theme inspired by Notion design
  - **LATTE**: Light theme using Catpuccin's Latte color scheme
  - **MOCHA**: Dark theme using Catpuccin's Mocha color scheme
+ - **HALLOWEEN**: Dark theme with an orange/purple Halloween color scheme
 """
 
-from dataclasses import dataclass, fields, field
-from typing import Tuple
+from dataclasses import dataclass, field, fields
 
 STRIPE_DARK = (10, 37, 64)
 STRIPE_LIGHT_BG = (246, 249, 252)
@@ -23,7 +23,7 @@ MINIMALIST_TEXT_COLOR = (255, 255, 255)
 MINIMALIST_TEXT_COLOR_GRAY = (45, 62, 80)
 MINIMALIST_ROW_ALT = (247, 249, 252)
 
-Color = Tuple[int, int, int]
+Color = tuple[int, int, int]
 
 
 def _validate_color(name: str, c: Color) -> None:
@@ -188,4 +188,28 @@ MOCHA = Style(
     border_color=(49, 50, 68),
     header_color=(205, 214, 244),
     disabled_color=(73, 77, 100),
+)
+
+HALLOWEEN = Style(
+    background_color=(26, 16, 15),
+    chart_colors=[
+        (255, 121, 0),
+        (150, 80, 200),
+        (90, 170, 80),
+        (200, 60, 60),
+        (255, 180, 60),
+        (120, 120, 200),
+        (80, 200, 160),
+        (180, 100, 60),
+    ],
+    priority_color=(255, 121, 0),
+    card_background=(45, 30, 26),
+    header_background=(59, 33, 20),
+    table_header_color=(115, 55, 10),
+    table_row_colors=[(26, 16, 15), (40, 26, 22)],
+    font_color=(255, 200, 150),
+    section_title_color=(255, 160, 90),
+    border_color=(110, 70, 40),
+    header_color=(255, 200, 150),
+    disabled_color=(120, 100, 90),
 )
