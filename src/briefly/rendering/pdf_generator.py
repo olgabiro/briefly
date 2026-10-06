@@ -409,7 +409,7 @@ class PDF(FPDF):
                 self.set_fill_color(
                     *self.style.chart_colors[index % len(self.style.chart_colors)]
                 )
-                bar_height = height * value / max_value
+                bar_height = height * (1 - value / max_value)
                 y = start_y + height - bar_height
                 if bar_height > 0.7:
                     self.rect(
