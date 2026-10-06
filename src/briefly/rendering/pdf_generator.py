@@ -568,7 +568,7 @@ class PDF(FPDF):
         """
         start_x, start_y = self.x, self.y
         self.set_fill_color(*color)
-        self.ellipse(start_x + 1, start_y + 1.5, 2, 2, style="F")
+        self.ellipse(start_x + 1, start_y + 4, 2, 2, style="F")
         self.set_x(start_x + 3)
         self.set_font(FONT_FAMILY, size=LABEL_SIZE)
         self.set_text_color(*self.style.font_color)
